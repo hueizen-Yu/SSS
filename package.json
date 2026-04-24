@@ -2,11 +2,9 @@
   "name": "antigravity-files",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node server.js",
-    "start:desktop": "electron .",
-    "build": "electron-builder"
+    "start": "node api/index.js"
   },
   "keywords": [],
   "author": "",
