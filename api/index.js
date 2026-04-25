@@ -333,20 +333,33 @@ app.delete('/api/records/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Upload product image
-app.post('/api/upload', upload.single('image'), verifyToken, async (req, res) => {
+// Upload product image with custom error handling
+app.post('/api/upload', (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('Multer Error:', err);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: '檔案太大，請限制在 3MB 以內' });
+            }
+            return res.status(500).json({ error: '圖片解析失敗: ' + err.message });
+        }
+        next();
+    });
+}, verifyToken, async (req, res) => {
     try {
         const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
         if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
         if (!req.file) return res.status(400).json({ error: '未提供圖片' });
 
+        console.log('Converting buffer to base64, size:', req.file.size);
         // Convert buffer to base64
         const base64Image = req.file.buffer.toString('base64');
         const dataUri = `data:${req.file.mimetype};base64,${base64Image}`;
 
         res.json({ success: true, path: dataUri });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Upload API Catch Error:', err);
+        res.status(500).json({ error: '伺服器上傳處理失敗: ' + err.message });
     }
 });
 
