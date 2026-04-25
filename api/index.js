@@ -31,23 +31,12 @@ app.use((req, res, next) => {
 const crypto = require('crypto');
 const tokens = new Map(); // token -> username
 
-// Multer setup for image uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Use the root public/images directory
-        const dir = path.join(__dirname, '..', 'public', 'images');
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-        // req.body might be empty if the fields come after the file in FormData
-        // We will fix the frontend order, but add a fallback here just in case
-        const product_id = req.body.product_id || Date.now();
-        const ext = path.extname(file.originalname) || '.png';
-        cb(null, `product_${product_id}${ext}`);
-    }
+// Multer setup for image uploads (Memory storage for Vercel compatibility)
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage,
+    limits: { fileSize: 4 * 1024 * 1024 } // 4MB limit
 });
-const upload = multer({ storage });
 
 function verifyToken(req, res, next) {
     const auth = req.headers['authorization'];
@@ -339,10 +328,13 @@ app.post('/api/upload', upload.single('image'), verifyToken, async (req, res) =>
     try {
         const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
         if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
-
         if (!req.file) return res.status(400).json({ error: '未提供圖片' });
 
-        res.json({ success: true, path: `images/${req.file.filename}` });
+        // Convert buffer to base64
+        const base64Image = req.file.buffer.toString('base64');
+        const dataUri = `data:${req.file.mimetype};base64,${base64Image}`;
+
+        res.json({ success: true, path: dataUri });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
