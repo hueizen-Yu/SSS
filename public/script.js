@@ -649,7 +649,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateStr = new Date().toISOString().split('T')[0];
         const fileName = `購物清單_${dateStr}.xlsx`;
 
-        // Use a more robust download method for iOS compatibility
-        XLSX.writeFile(workbook, fileName);
+        // Manual Blob-based download for better iOS compatibility
+        const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+        const s2ab = (s) => {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        };
+        const blob = new Blob([s2ab(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 100);
     });
 });
