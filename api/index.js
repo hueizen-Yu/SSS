@@ -34,13 +34,17 @@ const tokens = new Map(); // token -> username
 // Multer setup for image uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = path.join(__dirname, 'public', 'images');
+        // Use the root public/images directory
+        const dir = path.join(__dirname, '..', 'public', 'images');
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         cb(null, dir);
     },
     filename: (req, file, cb) => {
+        // req.body might be empty if the fields come after the file in FormData
+        // We will fix the frontend order, but add a fallback here just in case
         const product_id = req.body.product_id || Date.now();
-        cb(null, `product_${product_id}.png`);
+        const ext = path.extname(file.originalname) || '.png';
+        cb(null, `product_${product_id}${ext}`);
     }
 });
 const upload = multer({ storage });

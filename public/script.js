@@ -265,8 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Upload image if selected
             if (imageFile) {
                 const formData = new FormData();
-                formData.append('image', imageFile);
                 formData.append('product_id', product_id);
+                formData.append('image', imageFile);
                 formData.append('token', sessionStorage.getItem('token'));
                 
                 const uploadRes = await fetch('/api/upload', {
