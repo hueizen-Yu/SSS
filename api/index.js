@@ -39,13 +39,18 @@ const upload = multer({
     limits: { fileSize: 3 * 1024 * 1024 } // 3MB limit for Vercel stability
 });
 
-function verifyToken(req, res, next) {
+async function verifyToken(req, res, next) {
     const auth = req.headers['authorization'];
     if (auth && auth.startsWith('Bearer ')) {
         const token = auth.split(' ')[1];
-        if (tokens.has(token)) {
-            req.username = tokens.get(token);
-            return next();
+        try {
+            const result = await pool.query('SELECT username FROM users WHERE token = $1', [token]);
+            if (result.rows.length > 0) {
+                req.username = result.rows[0].username;
+                return next();
+            }
+        } catch (err) {
+            console.error('Verify Token Error:', err);
         }
     }
     res.status(401).json({ error: 'Unauthorized' });
@@ -138,9 +143,13 @@ async function initDB() {
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 gender TEXT NOT NULL,
-                is_admin BOOLEAN DEFAULT FALSE
+                is_admin BOOLEAN DEFAULT FALSE,
+                token TEXT
             );
         `);
+
+        // Migration: Ensure token column exists
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token TEXT;`);
 
         // Migration: Ensure price and items_json exists
         await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0;`);
@@ -187,7 +196,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: '帳號或密碼錯誤' });
         }
         const token = crypto.randomBytes(16).toString('hex');
-        tokens.set(token, username);
+        await pool.query('UPDATE users SET token = $1 WHERE username = $2', [token, username]);
         res.json({ token, username, isAdmin: result.rows[0].is_admin });
     } catch (err) {
         res.status(500).json({ error: '伺服器錯誤' });

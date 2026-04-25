@@ -262,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let image_path = products.find(p => p.id == id)?.image_path || 'images/placeholder.png';
 
         try {
+            console.log('Start saving product...');
             // 1. Upload image if selected
             if (imageFile) {
                 // Client-side size check (3MB limit for Vercel)
@@ -275,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('image', imageFile);
                 formData.append('token', sessionStorage.getItem('token'));
                 
+                console.log('Uploading image...');
                 const uploadRes = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
@@ -284,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (uploadRes.ok) {
                     const data = await uploadRes.json();
                     image_path = data.path;
+                    console.log('Image upload success!');
                 } else {
                     const errorData = await uploadRes.json();
                     throw new Error('圖片上傳失敗：' + (errorData.error || '未知原因'));
@@ -291,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 2. Save product
+            console.log('Saving product data...');
             const res = await fetch('/api/products', {
                 method: 'POST',
                 headers: getAuthHeaders(),
