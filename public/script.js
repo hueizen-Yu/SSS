@@ -645,6 +645,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         worksheet['!cols'] = colWidths;
 
-        XLSX.writeFile(workbook, `購物清單_${new Date().toLocaleDateString()}.xlsx`);
+        // Create a filename that is safe for mobile devices (no slashes)
+        const dateStr = new Date().toISOString().split('T')[0];
+        const fileName = `購物清單_${dateStr}.xlsx`;
+
+        // Use a more robust download method for iOS compatibility
+        XLSX.writeFile(workbook, fileName);
     });
 });
