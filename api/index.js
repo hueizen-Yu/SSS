@@ -36,7 +36,7 @@ const tokens = new Map(); // token -> username
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage,
-    limits: { fileSize: 4 * 1024 * 1024 } // 4MB limit
+    limits: { fileSize: 3 * 1024 * 1024 } // 3MB limit for Vercel stability
 });
 
 function verifyToken(req, res, next) {

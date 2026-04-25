@@ -264,6 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // 1. Upload image if selected
             if (imageFile) {
+                // Client-side size check (3MB limit for Vercel)
+                if (imageFile.size > 3 * 1024 * 1024) {
+                    alert('圖片檔案太大了！請選擇小於 3MB 的檔案。');
+                    return;
+                }
+
                 const formData = new FormData();
                 formData.append('product_id', product_id);
                 formData.append('image', imageFile);
@@ -274,9 +280,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
                     body: formData
                 });
+                
                 if (uploadRes.ok) {
                     const data = await uploadRes.json();
                     image_path = data.path;
+                } else {
+                    const errorData = await uploadRes.json();
+                    throw new Error('圖片上傳失敗：' + (errorData.error || '未知原因'));
                 }
             }
 
@@ -297,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (res.ok) {
+                alert('產品資訊已成功儲存！');
                 productModal.classList.add('hidden');
                 fetchProducts();
             } else {
@@ -304,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('儲存失敗：' + (data.error || '未知錯誤'));
             }
         } catch (err) {
+            console.error('Save Error:', err);
             alert('發生錯誤：' + err.message);
         }
     });
