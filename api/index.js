@@ -630,12 +630,17 @@ app.put('/api/profile', verifyToken, async (req, res) => {
 app.get('/', async (req, res) => {
     const htmlPath = path.join(__dirname, '..', 'public', 'index.html');
     try {
-        const settingsRes = await pool.query("SELECT value FROM settings WHERE key = 'form_title'");
-        const formTitle = settingsRes.rows[0]?.value || '購物需求申請';
+        const settingsRes = await pool.query("SELECT key, value FROM settings WHERE key IN ('form_title', 'og_description')");
+        const settings = {};
+        settingsRes.rows.forEach(r => settings[r.key] = r.value);
+        const formTitle = settings.form_title || '購物需求申請';
+        const ogDesc   = settings.og_description !== undefined ? settings.og_description : ' ';
         let html = fs.readFileSync(htmlPath, 'utf-8');
         html = html
             .replace(/<title>[^<]*<\/title>/, `<title>${formTitle}</title>`)
             .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${formTitle}$2`)
+            .replace(/(<meta property="og:description" content=")[^"]*(")/g, `$1${ogDesc}$2`)
+            .replace(/(<meta name="description" content=")[^"]*(")/g, `$1${ogDesc}$2`)
             .replace(/(<h1[^>]*id="form-title"[^>]*>)[^<]*(<\/h1>)/, `$1${formTitle}$2`);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);

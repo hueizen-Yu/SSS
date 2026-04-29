@@ -86,6 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFormTitleInput.value = settings.form_title;
                 document.title = settings.form_title;
             }
+            const ogDescInput = document.getElementById('set-og-description');
+            if (ogDescInput && settings.og_description !== undefined) {
+                ogDescInput.value = settings.og_description || '';
+            }
         } catch (err) {
             console.error('Failed to fetch settings', err);
         }
@@ -106,6 +110,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             alert('儲存設定失敗');
+        }
+    });
+
+    document.getElementById('save-og-desc-btn')?.addEventListener('click', async () => {
+        const newDesc = document.getElementById('set-og-description').value;
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ key: 'og_description', value: newDesc })
+            });
+            if (res.ok) {
+                alert('描述已儲存！請重新分享連結以更新預覽。');
+            }
+        } catch (err) {
+            alert('儲存失敗');
         }
     });
 
