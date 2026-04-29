@@ -663,10 +663,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-login check
     if (sessionStorage.getItem('token')) {
         const username = sessionStorage.getItem('username');
-        const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        applyLoginState(username, isAdmin);
+        // Initial state from storage
+        const isAdminFromStorage = sessionStorage.getItem('isAdmin') === 'true';
+        applyLoginState(username, isAdminFromStorage);
         fetchProducts();
         fetchSettings();
+
+        // Refresh isAdmin state from server to catch role changes (like S33 promotion)
+        fetch('/api/profile', { headers: getAuthHeaders() })
+            .then(res => res.json())
+            .then(data => {
+                if (data.username) {
+                    const latestIsAdmin = !!data.is_admin;
+                    sessionStorage.setItem('isAdmin', latestIsAdmin);
+                    applyLoginState(data.username, latestIsAdmin);
+                }
+            })
+            .catch(err => console.error('Failed to sync profile', err));
     } else {
         applyGuestState();
         fetchProducts();

@@ -593,7 +593,7 @@ app.get('/api/export-users-excel', verifyToken, async (req, res) => {
 app.get('/api/profile', verifyToken, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT username, last_name, first_name, gender, phone, email, city, address FROM users WHERE username = $1',
+            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin FROM users WHERE username = $1',
             [req.username]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: '使用者不存在' });
