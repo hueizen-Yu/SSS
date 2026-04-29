@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let records = []; // Global records storage
     let selectedItems = {}; // { product_id: quantity }
     let currentPage = 1;
-    const itemsPerPage = 3;
+    const itemsPerPage = 5;
 
     // Helper: Show Page
     function showPage(page) {
@@ -144,16 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''}>
                         <span class="product-id">${prod.product_id}</span>
                         <span class="product-name">${prod.name}</span>
+                        <span style="font-size: 12px; color: var(--text-muted); margin-left: 4px;">${prod.short_desc || ''}</span>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                        <span style="color: var(--primary); font-weight: 600;">$${Number(prod.price || 0).toLocaleString()}</span>
-                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='var(--primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(255,255,255,0.2)'">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span style="font-size: 12px; color: var(--text-muted);">數量:</span>
+                            <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" class="qty-input" style="width: 50px; padding: 3px 6px; font-size: 13px;">
+                        </div>
+                        <span style="color: var(--primary); font-weight: 600; font-size: 14px; min-width: 60px; text-align: right;">$${Number(prod.price || 0).toLocaleString()}</span>
+                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
                     </div>
-                </div>
-                <p style="font-size: 13px; color: var(--text-muted); margin-left: 34px; line-height: 1.5;">${prod.short_desc || ''}</p>
-                <div class="product-qty-control" style="margin-left: 34px; margin-top: 10px; align-self: flex-start;">
-                    <span style="font-size: 13px; color: var(--text-muted);">採購數量:</span>
-                    <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" class="qty-input">
                 </div>
             `;
 
