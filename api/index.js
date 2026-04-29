@@ -635,7 +635,8 @@ app.get('/', async (req, res) => {
         let html = fs.readFileSync(htmlPath, 'utf-8');
         html = html
             .replace(/<title>[^<]*<\/title>/, `<title>${formTitle}</title>`)
-            .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${formTitle}$2`);
+            .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${formTitle}$2`)
+            .replace(/(<h1[^>]*id="form-title"[^>]*>)[^<]*(<\/h1>)/, `$1${formTitle}$2`);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
     } catch (err) {
