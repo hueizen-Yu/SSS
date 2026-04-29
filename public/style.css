@@ -113,6 +113,8 @@ h1 {
 input[type="text"],
 input[type="password"],
 input[type="number"],
+input[type="tel"],
+input[type="email"],
 textarea,
 select {
     width: 100%;

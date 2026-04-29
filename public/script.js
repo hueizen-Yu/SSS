@@ -730,8 +730,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td data-label="Email">${u.email || '-'}</td>
                     <td data-label="縣市">${u.city || '-'}</td>
                     <td data-label="地址">${u.address || '-'}</td>
-                    <td data-label="身份">${u.is_admin ? '🔑 管理者' : '👤 一般'}</td>
+                    <td data-label="身份">
+                        <button class="btn-small toggle-admin-btn" data-username="${u.username}" style="background: ${u.is_admin ? '#f59e0b' : '#6b7280'}; font-size: 12px; padding: 4px 10px;">
+                            ${u.is_admin ? '🔑 管理者' : '👤 一般'}
+                        </button>
+                    </td>
                 `;
+
+                tr.querySelector('.toggle-admin-btn').addEventListener('click', async () => {
+                    const targetUser = u.username;
+                    const newStatus = !u.is_admin;
+                    const actionText = newStatus ? '設為管理者' : '取消管理者權限';
+                    if (!confirm(`確定要將「${targetUser}」${actionText}嗎？`)) return;
+                    try {
+                        const toggleRes = await fetch('/api/users/toggle-admin', {
+                            method: 'POST',
+                            headers: getAuthHeaders(),
+                            body: JSON.stringify({ username: targetUser, is_admin: newStatus })
+                        });
+                        if (toggleRes.ok) {
+                            alert(`已成功${actionText}！`);
+                            fetchUsers();
+                        } else {
+                            const d = await toggleRes.json();
+                            alert('操作失敗：' + (d.error || '未知錯誤'));
+                        }
+                    } catch (err) {
+                        alert('操作失敗');
+                    }
+                });
+
                 usersBody.appendChild(tr);
             });
         } catch (err) {

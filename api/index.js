@@ -529,6 +529,24 @@ app.get('/api/users', verifyToken, async (req, res) => {
     }
 });
 
+// Toggle admin role (Admin only)
+app.post('/api/users/toggle-admin', verifyToken, async (req, res) => {
+    const { username, is_admin } = req.body;
+    try {
+        const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
+        if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
+        // Prevent self-demotion
+        if (username === req.username && !is_admin) {
+            return res.status(400).json({ error: '不可取消自己的管理者權限' });
+        }
+        await pool.query('UPDATE users SET is_admin = $1 WHERE username = $2', [is_admin, username]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Toggle Admin Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Export users to Excel (Admin only)
 app.get('/api/export-users-excel', verifyToken, async (req, res) => {
     try {
