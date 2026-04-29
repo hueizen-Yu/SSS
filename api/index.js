@@ -164,6 +164,14 @@ async function initDB() {
         await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS items_json JSONB DEFAULT '[]';`);
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;`);
 
+        // Migration: Extended user profile fields
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name TEXT;`);
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT;`);
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;`);
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT;`);
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS city TEXT;`);
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;`);
+
         // Seed the admin user
         await client.query(`
             INSERT INTO users (username, password, gender, is_admin)
@@ -182,17 +190,25 @@ async function initDB() {
 initDB();
 
 app.post('/api/register', async (req, res) => {
-    const { username, password, gender } = req.body;
-    if (!username || !password || !gender) {
-        return res.status(400).json({ error: '請填寫所有欄位' });
+    const { username, password, gender, last_name, first_name, phone, email, city, address } = req.body;
+    if (!username || !password || !gender || !last_name || !first_name || !phone || !email) {
+        return res.status(400).json({ error: '請填寫所有必填欄位' });
     }
-    
+
     try {
-        const sql = 'INSERT INTO users (username, password, gender) VALUES ($1, $2, $3)';
-        await pool.query(sql, [username, password, gender]);
+        // Check for duplicate username first
+        const existing = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: '帳號名稱已被使用', code: 'DUPLICATE_USERNAME' });
+        }
+
+        const sql = `INSERT INTO users (username, password, gender, last_name, first_name, phone, email, city, address)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+        await pool.query(sql, [username, password, gender, last_name, first_name, phone, email, city || null, address || null]);
         res.json({ message: '註冊成功' });
     } catch (err) {
-        return res.status(400).json({ error: '使用者名稱已被註冊！' });
+        console.error('Register Error:', err);
+        return res.status(500).json({ error: '伺服器錯誤，請稍後再試' });
     }
 });
 

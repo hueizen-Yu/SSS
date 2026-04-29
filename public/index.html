@@ -41,6 +41,24 @@
             <h1>註冊帳號</h1>
             <p class="subtitle">建立您的專屬購物需求帳號</p>
             <form id="register-form">
+                <div style="display: flex; gap: 10px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="reg-lastname">姓</label>
+                        <input type="text" id="reg-lastname" required placeholder="姓氏">
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label for="reg-firstname">名</label>
+                        <input type="text" id="reg-firstname" required placeholder="名字">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="reg-title">稱謂</label>
+                    <select id="reg-title" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); outline: none; font-size: 16px; font-family: inherit; color: #333;">
+                        <option value="">請選擇稱謂</option>
+                        <option value="先生">先生</option>
+                        <option value="小姐">小姐</option>
+                    </select>
+                </div>
                 <div class="input-group">
                     <label for="reg-username">使用者名稱</label>
                     <input type="text" id="reg-username" required placeholder="設定帳號名稱">
@@ -50,12 +68,44 @@
                     <input type="password" id="reg-password" required placeholder="設定登入密碼">
                 </div>
                 <div class="input-group">
-                    <label for="reg-gender">性別</label>
-                    <select id="reg-gender" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); outline: none; font-size: 16px; font-family: inherit;">
-                        <option value="男">男</option>
-                        <option value="女">女</option>
-                        <option value="其他">其他</option>
+                    <label for="reg-phone">連絡電話</label>
+                    <input type="tel" id="reg-phone" required placeholder="例如: 0912345678">
+                </div>
+                <div class="input-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" required placeholder="example@email.com">
+                </div>
+                <div class="input-group">
+                    <label for="reg-city">縣市（選填）</label>
+                    <select id="reg-city" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); outline: none; font-size: 16px; font-family: inherit; color: #333;">
+                        <option value="">請選擇縣市</option>
+                        <option>台北市</option>
+                        <option>新北市</option>
+                        <option>桃園市</option>
+                        <option>台中市</option>
+                        <option>台南市</option>
+                        <option>高雄市</option>
+                        <option>基隆市</option>
+                        <option>新竹市</option>
+                        <option>嘉義市</option>
+                        <option>新竹縣</option>
+                        <option>苗栗縣</option>
+                        <option>彰化縣</option>
+                        <option>南投縣</option>
+                        <option>雲林縣</option>
+                        <option>嘉義縣</option>
+                        <option>屏東縣</option>
+                        <option>宜蘭縣</option>
+                        <option>花蓮縣</option>
+                        <option>台東縣</option>
+                        <option>澎湖縣</option>
+                        <option>金門縣</option>
+                        <option>連江縣</option>
                     </select>
+                </div>
+                <div class="input-group">
+                    <label for="reg-address">地址（選填）</label>
+                    <input type="text" id="reg-address" placeholder="請輸入詳細地址">
                 </div>
                 <button type="submit" class="btn-primary">註冊</button>
             </form>

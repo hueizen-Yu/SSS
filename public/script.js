@@ -554,21 +554,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = document.getElementById('reg-username').value;
-        const password = document.getElementById('reg-password').value;
-        const gender = document.getElementById('reg-gender').value;
+        const last_name  = document.getElementById('reg-lastname').value.trim();
+        const first_name = document.getElementById('reg-firstname').value.trim();
+        const gender     = document.getElementById('reg-title').value;
+        const username   = document.getElementById('reg-username').value.trim();
+        const password   = document.getElementById('reg-password').value;
+        const phone      = document.getElementById('reg-phone').value.trim();
+        const email      = document.getElementById('reg-email').value.trim();
+        const city       = document.getElementById('reg-city').value;
+        const address    = document.getElementById('reg-address').value.trim();
 
         const res = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, gender })
+            body: JSON.stringify({ username, password, gender, last_name, first_name, phone, email, city, address })
         });
 
         if (res.ok) {
             alert('註冊成功！請登入');
             showPage(loginPage);
         } else {
-            alert('註冊失敗');
+            const data = await res.json();
+            if (data.code === 'DUPLICATE_USERNAME') {
+                alert('帳號名稱已被使用，請更換帳號名稱後再試！');
+            } else {
+                alert('註冊失敗：' + (data.error || '未知錯誤'));
+            }
         }
     });
 
