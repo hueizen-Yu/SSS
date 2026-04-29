@@ -133,9 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="product-id">${prod.product_id}</span>
                         <span class="product-name">${prod.name}</span>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                         <span style="color: var(--primary); font-weight: 600;">$${Number(prod.price || 0).toLocaleString()}</span>
-                        <button type="button" class="btn-small view-detail-btn" data-id="${prod.id}">🔍 詳細資訊</button>
+                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='var(--primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(255,255,255,0.2)'">
                     </div>
                 </div>
                 <p style="font-size: 13px; color: var(--text-muted); margin-left: 34px; line-height: 1.5;">${prod.short_desc || ''}</p>
@@ -381,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const emptyState = document.getElementById('empty-state');
 
         loadingIndicator.classList.remove('hidden');
+        emptyState.classList.add('hidden');
         recordsBody.innerHTML = '';
         
         try {
