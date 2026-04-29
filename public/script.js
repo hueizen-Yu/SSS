@@ -139,21 +139,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = `product-item ${isChecked ? 'selected' : ''}`;
             card.innerHTML = `
-                <div class="product-header">
-                    <div class="product-info">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''}>
                         <span class="product-id">${prod.product_id}</span>
                         <span class="product-name">${prod.name}</span>
-                        <span style="font-size: 12px; color: var(--text-muted); margin-left: 4px;">${prod.short_desc || ''}</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <span style="font-size: 12px; color: var(--text-muted);">數量:</span>
-                            <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" class="qty-input" style="width: 50px; padding: 3px 6px; font-size: 13px;">
-                        </div>
-                        <span style="color: var(--primary); font-weight: 600; font-size: 14px; min-width: 60px; text-align: right;">$${Number(prod.price || 0).toLocaleString()}</span>
-                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 4px 28px; line-height: 1.4;">${prod.short_desc || ''}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 28px;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span style="font-size: 12px; color: var(--text-muted);">數量:</span>
+                        <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" class="qty-input" style="width: 50px; padding: 3px 6px; font-size: 13px;">
                     </div>
+                    <span style="color: var(--primary); font-weight: 600; font-size: 14px;">$${Number(prod.price || 0).toLocaleString()}</span>
                 </div>
             `;
 
