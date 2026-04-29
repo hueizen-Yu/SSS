@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (settings.form_title) {
                 formTitleH1.textContent = settings.form_title;
                 setFormTitleInput.value = settings.form_title;
+                document.title = settings.form_title;
             }
         } catch (err) {
             console.error('Failed to fetch settings', err);
