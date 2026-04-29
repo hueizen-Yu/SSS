@@ -513,6 +513,101 @@ app.get('/api/export-excel', verifyToken, async (req, res) => {
     }
 });
 
+// Get all users (Admin only)
+app.get('/api/users', verifyToken, async (req, res) => {
+    try {
+        const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
+        if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
+
+        const result = await pool.query(
+            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin FROM users ORDER BY id ASC'
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Get Users Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Export users to Excel (Admin only)
+app.get('/api/export-users-excel', verifyToken, async (req, res) => {
+    try {
+        const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
+        if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
+
+        const result = await pool.query(
+            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin FROM users ORDER BY id ASC'
+        );
+
+        const exportData = result.rows.map(u => ({
+            '帳號': u.username,
+            '姓': u.last_name || '',
+            '名': u.first_name || '',
+            '稱謂': u.gender || '',
+            '電話': u.phone || '',
+            'Email': u.email || '',
+            '縣市': u.city || '',
+            '地址': u.address || '',
+            '身份': u.is_admin ? '管理者' : '一般使用者'
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        worksheet['!cols'] = [
+            { wch: 15 }, { wch: 8 }, { wch: 10 }, { wch: 8 },
+            { wch: 15 }, { wch: 25 }, { wch: 10 }, { wch: 30 }, { wch: 10 }
+        ];
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, '使用者列表');
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        const buf = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent('使用者列表_' + dateStr + '.xlsx')}`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buf);
+    } catch (err) {
+        console.error('Export Users Excel Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get own profile
+app.get('/api/profile', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT username, last_name, first_name, gender, phone, email, city, address FROM users WHERE username = $1',
+            [req.username]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: '使用者不存在' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Get Profile Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Update own profile (except username)
+app.put('/api/profile', verifyToken, async (req, res) => {
+    const { last_name, first_name, gender, phone, email, city, address, password } = req.body;
+    try {
+        if (password) {
+            await pool.query(
+                'UPDATE users SET last_name=$1, first_name=$2, gender=$3, phone=$4, email=$5, city=$6, address=$7, password=$8 WHERE username=$9',
+                [last_name, first_name, gender, phone, email, city || null, address || null, password, req.username]
+            );
+        } else {
+            await pool.query(
+                'UPDATE users SET last_name=$1, first_name=$2, gender=$3, phone=$4, email=$5, city=$6, address=$7 WHERE username=$8',
+                [last_name, first_name, gender, phone, email, city || null, address || null, req.username]
+            );
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Update Profile Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
