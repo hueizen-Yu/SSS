@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const XLSX = require('xlsx');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,9 +41,16 @@ const upload = multer({
 });
 
 async function verifyToken(req, res, next) {
+    // Support both Authorization header and ?token= query param (needed for mobile direct URL navigation)
+    let token = null;
     const auth = req.headers['authorization'];
     if (auth && auth.startsWith('Bearer ')) {
-        const token = auth.split(' ')[1];
+        token = auth.split(' ')[1];
+    } else if (req.query.token) {
+        token = req.query.token;
+    }
+
+    if (token) {
         try {
             const result = await pool.query('SELECT username FROM users WHERE token = $1', [token]);
             if (result.rows.length > 0) {
@@ -415,6 +423,76 @@ app.post('/api/settings', verifyToken, async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Settings Update Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Export Excel (works on all browsers including iOS Safari)
+app.get('/api/export-excel', verifyToken, async (req, res) => {
+    try {
+        const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
+        const isAdmin = userRes.rows[0]?.is_admin;
+
+        let result;
+        if (isAdmin) {
+            result = await pool.query('SELECT * FROM records ORDER BY id DESC');
+        } else {
+            result = await pool.query('SELECT * FROM records WHERE username = $1 ORDER BY id DESC', [req.username]);
+        }
+
+        const records = result.rows;
+
+        // Fetch products for name lookup
+        const prodResult = await pool.query('SELECT * FROM products');
+        const products = prodResult.rows;
+
+        const exportData = records.map(rec => {
+            let names = '無';
+            let idsWithQty = '無';
+            let totalPrice = 0;
+
+            if (rec.items_json && Array.isArray(rec.items_json)) {
+                const itemData = rec.items_json.map(i => {
+                    const prod = products.find(p => p.product_id === i.product_id);
+                    const unitPrice = parseFloat(i.price_at_purchase) || 0;
+                    totalPrice += unitPrice * i.quantity;
+                    return {
+                        name: prod ? prod.name : '未知品項',
+                        idQty: `${i.product_id}(x${i.quantity})`
+                    };
+                });
+                names = itemData.map(d => d.name).join(', ');
+                idsWithQty = itemData.map(d => d.idQty).join(', ');
+            }
+
+            return {
+                '申請時間': rec.date,
+                '申請人': rec.username,
+                '品名': names,
+                '編號(數量)': idsWithQty,
+                '總價': totalPrice,
+                '備註': rec.description || ''
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        worksheet['!cols'] = [
+            { wch: 20 }, { wch: 15 }, { wch: 30 },
+            { wch: 20 }, { wch: 10 }, { wch: 30 }
+        ];
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, '購物清單');
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        const fileName = `shopping_list_${dateStr}.xlsx`;
+
+        const buf = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent('購物清單_' + dateStr + '.xlsx')}`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buf);
+    } catch (err) {
+        console.error('Export Excel Error:', err);
         res.status(500).json({ error: err.message });
     }
 });

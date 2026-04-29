@@ -598,75 +598,12 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchSettings();
     }
     exportExcelBtn.addEventListener('click', () => {
-        console.log('Exporting Excel. Current records count:', records.length);
-        if (!records || records.length === 0) {
-            alert('目前沒有紀錄可供匯出');
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            alert('請先登入');
             return;
         }
-
-        const exportData = records.map(rec => {
-            let names = '無';
-            let idsWithQty = '無';
-            let totalPrice = 0;
-
-            if (rec.items_json && Array.isArray(rec.items_json)) {
-                const itemData = rec.items_json.map(i => {
-                    const prod = products.find(p => p.product_id === i.product_id);
-                    const unitPrice = i.price_at_purchase || 0;
-                    totalPrice += (unitPrice * i.quantity);
-                    return { name: prod ? prod.name : '未知品項', idQty: `${i.product_id}(x${i.quantity})` };
-                });
-                names = itemData.map(d => d.name).join(', ');
-                idsWithQty = itemData.map(d => d.idQty).join(', ');
-            }
-
-            return {
-                '申請時間': rec.date,
-                '申請人': rec.username,
-                '品名': names,
-                '編號(數量)': idsWithQty,
-                '總價': totalPrice,
-                '備註': rec.description || ''
-            };
-        });
-
-        const worksheet = XLSX.utils.json_to_sheet(exportData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "購物清單");
-        
-        // Auto-size columns
-        const colWidths = [
-            { wch: 20 }, // 申請時間
-            { wch: 15 }, // 申請人
-            { wch: 30 }, // 品名
-            { wch: 20 }, // 編號(數量)
-            { wch: 10 }, // 總價
-            { wch: 30 }  // 備註
-        ];
-        worksheet['!cols'] = colWidths;
-
-        // Create a filename that is safe for mobile devices (no slashes)
-        const dateStr = new Date().toISOString().split('T')[0];
-        const fileName = `購物清單_${dateStr}.xlsx`;
-
-        // Manual Blob-based download for better iOS compatibility
-        const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
-        const s2ab = (s) => {
-            const buf = new ArrayBuffer(s.length);
-            const view = new Uint8Array(buf);
-            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-            return buf;
-        };
-        const blob = new Blob([s2ab(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 100);
+        // 使用後端 API 直接下載，支援所有手機瀏覽器（包含 iOS Safari）
+        window.location.href = `/api/export-excel?token=${encodeURIComponent(token)}`;
     });
 });
