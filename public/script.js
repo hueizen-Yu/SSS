@@ -82,9 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/settings');
             const settings = await res.json();
             if (settings.form_title) {
-                formTitleH1.textContent = settings.form_title;
+                formTitleH1.innerHTML = settings.form_title.replace(/\|/g, '<br>');
                 setFormTitleInput.value = settings.form_title;
-                document.title = settings.form_title;
+                document.title = settings.form_title.replace(/\|/g, '');
             }
             const ogDescInput = document.getElementById('set-og-description');
             if (ogDescInput && settings.og_description !== undefined) {

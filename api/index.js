@@ -633,15 +633,17 @@ app.get('/', async (req, res) => {
         const settingsRes = await pool.query("SELECT key, value FROM settings WHERE key IN ('form_title', 'og_description')");
         const settings = {};
         settingsRes.rows.forEach(r => settings[r.key] = r.value);
-        const formTitle = settings.form_title || '購物需求申請';
+        const formTitleRaw = settings.form_title || '購物需求申請';
+        const formTitleClean = formTitleRaw.replace(/\|/g, '');
+        const formTitleHTML  = formTitleRaw.replace(/\|/g, '<br>');
         const ogDesc   = settings.og_description !== undefined ? settings.og_description : ' ';
         let html = fs.readFileSync(htmlPath, 'utf-8');
         html = html
-            .replace(/<title>[^<]*<\/title>/, `<title>${formTitle}</title>`)
-            .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${formTitle}$2`)
+            .replace(/<title>[^<]*<\/title>/, `<title>${formTitleClean}</title>`)
+            .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${formTitleClean}$2`)
             .replace(/(<meta property="og:description" content=")[^"]*(")/g, `$1${ogDesc}$2`)
             .replace(/(<meta name="description" content=")[^"]*(")/g, `$1${ogDesc}$2`)
-            .replace(/(<h1[^>]*id="form-title"[^>]*>)[^<]*(<\/h1>)/, `$1${formTitle}$2`);
+            .replace(/(<h1[^>]*id="form-title"[^>]*>)[^<]*(<\/h1>)/, `$1${formTitleHTML}$2`);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
     } catch (err) {
