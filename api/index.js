@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Static files served after dynamic routes (see bottom of file)
 
 // Request Logging
 app.use((req, res, next) => {
@@ -625,6 +625,27 @@ app.put('/api/profile', verifyToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// Dynamic root route: inject title from DB for social media previews
+app.get('/', async (req, res) => {
+    const htmlPath = path.join(__dirname, '..', 'public', 'index.html');
+    try {
+        const settingsRes = await pool.query("SELECT value FROM settings WHERE key = 'form_title'");
+        const formTitle = settingsRes.rows[0]?.value || '購物需求申請';
+        let html = fs.readFileSync(htmlPath, 'utf-8');
+        html = html
+            .replace(/<title>[^<]*<\/title>/, `<title>${formTitle}</title>`)
+            .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${formTitle}$2`);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+    } catch (err) {
+        console.error('Root route error:', err);
+        res.sendFile(htmlPath);
+    }
+});
+
+// Serve static files (CSS, JS, images) as fallback
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
