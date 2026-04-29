@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const listPage = document.getElementById('list-page');
     const detailPage = document.getElementById('detail-page');
     const managePage = document.getElementById('manage-page');
+    const usersPage = document.getElementById('users-page');
 
     // Forms
     const loginForm = document.getElementById('login-form');
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Buttons
     const viewRecordsBtn = document.getElementById('view-records-btn');
+    const submitBtn      = document.getElementById('submit-btn');
     const backBtn = document.getElementById('back-btn');
     const backToFormBtn = document.getElementById('back-to-form-btn');
     const adminManageBtn = document.getElementById('admin-manage-btn');
@@ -37,11 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettingsBtn = document.getElementById('save-settings-btn');
     const setFormTitleInput = document.getElementById('set-form-title');
     const formTitleH1 = document.getElementById('form-title');
+    const guestLoginBtn  = document.getElementById('guest-login-btn');
+    const userNav        = document.getElementById('user-nav');
+    const userDisplayName = document.getElementById('user-display-name');
 
     const logoutBtns = [
-        document.getElementById('logout-btn-form'),
-        document.getElementById('logout-btn-list')
+        document.getElementById('logout-btn-form')
     ];
+
+    // Profile & Users
+    const profileModal = document.getElementById('profile-modal');
+    const profileForm  = document.getElementById('profile-form');
+    const userDisplayBtn = document.getElementById('user-display');
+    const viewUsersBtn = document.getElementById('view-users-btn');
+    const backToManageBtn = document.getElementById('back-to-manage-btn');
+    const exportUsersExcelBtn = document.getElementById('export-users-excel-btn');
 
     // State
     let products = [];
@@ -519,6 +531,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Auth & Initial State ---
 
+    // --- Helper: Update UI based on login state ---
+    function applyLoginState(username, isAdmin) {
+        // Show/hide guest login button
+        guestLoginBtn.style.display = 'none';
+        // Show user nav
+        userNav.style.display = 'flex';
+        userDisplayName.textContent = username;
+        // Admin button
+        adminManageBtn.style.display = isAdmin ? 'inline-block' : 'none';
+        // Unlock action buttons
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+        viewRecordsBtn.disabled = false;
+        viewRecordsBtn.style.opacity = '1';
+        viewRecordsBtn.style.cursor = 'pointer';
+        document.getElementById('submit-lock-hint').style.display = 'none';
+        document.getElementById('records-lock-hint').style.display = 'none';
+    }
+
+    function applyGuestState() {
+        guestLoginBtn.style.display = 'inline-flex';
+        userNav.style.display = 'none';
+        adminManageBtn.style.display = 'none';
+        // Lock action buttons
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.4';
+        submitBtn.style.cursor = 'not-allowed';
+        viewRecordsBtn.disabled = true;
+        viewRecordsBtn.style.opacity = '0.4';
+        viewRecordsBtn.style.cursor = 'not-allowed';
+        document.getElementById('submit-lock-hint').style.display = 'block';
+        document.getElementById('records-lock-hint').style.display = 'block';
+    }
+
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('login-username').value;
@@ -535,20 +582,12 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.setItem('token', data.token);
             sessionStorage.setItem('username', data.username);
             sessionStorage.setItem('isAdmin', data.isAdmin);
-            
-            document.getElementById('user-display').textContent = `使用者: ${data.username}`;
-            document.getElementById('user-display-list').textContent = `使用者: ${data.username}`;
-            
-            if (data.isAdmin) {
-                adminManageBtn.style.display = 'block';
-            } else {
-                adminManageBtn.style.display = 'none';
-            }
-
+            applyLoginState(data.username, data.isAdmin);
             showPage(formPage);
             fetchProducts();
+            fetchSettings();
         } else {
-            alert('登入失敗');
+            alert('登入失敗，請確認帳號與密碼');
         }
     });
 
@@ -586,9 +625,13 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             sessionStorage.clear();
-            showPage(loginPage);
+            applyGuestState();
+            showPage(formPage);
         });
     });
+
+    // Guest login button → go to login page
+    guestLoginBtn.addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
 
     document.getElementById('go-to-register').addEventListener('click', (e) => { e.preventDefault(); showPage(registerPage); });
     document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
@@ -600,22 +643,109 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('token')) {
         const username = sessionStorage.getItem('username');
         const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        document.getElementById('user-display').textContent = `使用者: ${username}`;
-        document.getElementById('user-display-list').textContent = `使用者: ${username}`;
-        if (isAdmin) adminManageBtn.style.display = 'block';
-        showPage(formPage);
+        applyLoginState(username, isAdmin);
         fetchProducts();
         fetchSettings();
     } else {
+        applyGuestState();
+        fetchProducts();
         fetchSettings();
     }
     exportExcelBtn.addEventListener('click', () => {
         const token = sessionStorage.getItem('token');
-        if (!token) {
-            alert('請先登入');
-            return;
-        }
-        // 使用後端 API 直接下載，支援所有手機瀏覽器（包含 iOS Safari）
+        if (!token) { alert('請先登入'); return; }
         window.location.href = `/api/export-excel?token=${encodeURIComponent(token)}`;
+    });
+
+    // --- Profile Modal ---
+    userDisplayBtn.addEventListener('click', async () => {
+        const token = sessionStorage.getItem('token');
+        const res = await fetch('/api/profile', { headers: getAuthHeaders() });
+        if (!res.ok) { alert('無法載入個人資料'); return; }
+        const data = await res.json();
+        document.getElementById('profile-username').value  = data.username || '';
+        document.getElementById('profile-lastname').value  = data.last_name || '';
+        document.getElementById('profile-firstname').value = data.first_name || '';
+        document.getElementById('profile-title').value     = data.gender || '';
+        document.getElementById('profile-password').value  = '';
+        document.getElementById('profile-phone').value     = data.phone || '';
+        document.getElementById('profile-email').value     = data.email || '';
+        document.getElementById('profile-city').value      = data.city || '';
+        document.getElementById('profile-address').value   = data.address || '';
+        profileModal.classList.remove('hidden');
+    });
+
+    document.getElementById('cancel-profile-btn').addEventListener('click', () => {
+        profileModal.classList.add('hidden');
+    });
+
+    profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            last_name:  document.getElementById('profile-lastname').value.trim(),
+            first_name: document.getElementById('profile-firstname').value.trim(),
+            gender:     document.getElementById('profile-title').value,
+            phone:      document.getElementById('profile-phone').value.trim(),
+            email:      document.getElementById('profile-email').value.trim(),
+            city:       document.getElementById('profile-city').value,
+            address:    document.getElementById('profile-address').value.trim(),
+        };
+        const newPassword = document.getElementById('profile-password').value;
+        if (newPassword) payload.password = newPassword;
+
+        const res = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            alert('個人資料已更新！');
+            profileModal.classList.add('hidden');
+        } else {
+            const d = await res.json();
+            alert('更新失敗：' + (d.error || '未知錯誤'));
+        }
+    });
+
+    // --- Users List (Admin) ---
+    async function fetchUsers() {
+        const usersBody   = document.getElementById('users-body');
+        const usersLoading = document.getElementById('users-loading');
+        const usersEmpty  = document.getElementById('users-empty');
+        usersLoading.classList.remove('hidden');
+        usersEmpty.classList.add('hidden');
+        usersBody.innerHTML = '';
+        try {
+            const res = await fetch('/api/users', { headers: getAuthHeaders() });
+            const users = await res.json();
+            usersLoading.classList.add('hidden');
+            if (!users || users.length === 0) { usersEmpty.classList.remove('hidden'); return; }
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td data-label="帳號">${u.username}</td>
+                    <td data-label="姓名">${(u.last_name || '') + (u.first_name || '') || '-'}</td>
+                    <td data-label="稱謂">${u.gender || '-'}</td>
+                    <td data-label="電話">${u.phone || '-'}</td>
+                    <td data-label="Email">${u.email || '-'}</td>
+                    <td data-label="縣市">${u.city || '-'}</td>
+                    <td data-label="地址">${u.address || '-'}</td>
+                    <td data-label="身份">${u.is_admin ? '🔑 管理者' : '👤 一般'}</td>
+                `;
+                usersBody.appendChild(tr);
+            });
+        } catch (err) {
+            usersLoading.classList.add('hidden');
+            console.error('Fetch users failed', err);
+        }
+    }
+
+    viewUsersBtn.addEventListener('click', () => { showPage(usersPage); fetchUsers(); });
+    backToManageBtn.addEventListener('click', () => showPage(managePage));
+
+    exportUsersExcelBtn.addEventListener('click', () => {
+        const token = sessionStorage.getItem('token');
+        if (!token) { alert('請先登入'); return; }
+        window.location.href = `/api/export-users-excel?token=${encodeURIComponent(token)}`;
     });
 });

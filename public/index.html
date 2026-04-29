@@ -14,7 +14,7 @@
     </div>
 
     <!-- Login Page -->
-    <div id="login-page" class="page active container">
+    <div id="login-page" class="page container">
         <div class="glass-card">
             <h1>系統登入</h1>
             <p class="subtitle">請輸入您的帳號與密碼</p>
@@ -115,16 +115,23 @@
         </div>
     </div>
 
-    <!-- Input Form Page -->
-    <div id="form-page" class="page container">
+    <!-- Home / Form Page -->
+    <div id="form-page" class="page active container">
         <div class="glass-card">
+            <!-- Top Navigation Bar -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <!-- Left: Login hint (guest) OR admin button (logged in) -->
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span id="user-display" style="font-size: 14px; color: var(--primary); font-weight: 600;"></span>
+                    <a id="guest-login-btn" href="#" style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #fff; font-weight: 600; background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 6px 14px; border-radius: 20px; text-decoration: none; transition: opacity 0.2s; box-shadow: 0 2px 8px rgba(99,102,241,0.4);">🔐 請先登入</a>
                     <button id="admin-manage-btn" class="btn-small admin-only" style="display: none; background: var(--secondary);">管理系統</button>
                 </div>
-                <button id="logout-btn-form" class="btn-small" style="width: auto; padding: 4px 10px; background: #ef4444;">登出</button>
+                <!-- Right: User account button (logged in only) -->
+                <div id="user-nav" style="display: none; align-items: center; gap: 10px;">
+                    <button id="user-display" title="點選修改個人資料" style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--primary); font-weight: 600; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.4); border-radius: 20px; cursor: pointer; padding: 6px 14px; transition: background 0.2s;">👤 <span id="user-display-name"></span></button>
+                    <button id="logout-btn-form" class="btn-small" style="width: auto; padding: 4px 10px; background: #ef4444;">登出</button>
+                </div>
             </div>
+
             <h1 id="form-title" class="editable-title">購物需求申請</h1>
             <p class="subtitle">請勾選您需要的品項 (每頁 3 項)</p>
             
@@ -140,9 +147,18 @@
                     <button type="button" id="next-page" class="btn-small" style="width: auto; padding: 5px 15px;">下一頁</button>
                 </div>
 
-                <button type="submit" class="btn-primary">送出需求清單</button>
+                <!-- Submit button: locked when not logged in -->
+                <div style="position: relative;">
+                    <button type="submit" id="submit-btn" class="btn-primary" disabled style="opacity: 0.4; cursor: not-allowed;">送出需求清單</button>
+                    <div id="submit-lock-hint" style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 6px;">⚠️ 請先登入才能送出需求單</div>
+                </div>
             </form>
-            <button id="view-records-btn" class="btn-secondary mt-3">直接查看歷史記錄</button>
+
+            <!-- View records button: locked when not logged in -->
+            <div style="position: relative; margin-top: 10px;">
+                <button id="view-records-btn" class="btn-secondary mt-3" disabled style="opacity: 0.4; cursor: not-allowed;">直接查看歷史記錄</button>
+                <div id="records-lock-hint" style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 6px;">⚠️ 請先登入才能查看歷史紀錄</div>
+            </div>
         </div>
     </div>
 
@@ -153,7 +169,10 @@
                 <h1>品項管理系統</h1>
                 <button id="back-to-form-from-manage" class="btn-small" style="width: auto;">返回選購</button>
             </div>
-            <button id="add-product-btn" class="btn-primary" style="margin-bottom: 20px;">+ 新增產品品項</button>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="add-product-btn" class="btn-primary" style="margin-bottom: 0;">+ 新增產品品項</button>
+                <button id="view-users-btn" class="btn-primary" style="margin-bottom: 0; background: var(--secondary);">👥 使用者列表</button>
+            </div>
             <div class="table-container">
                 <table>
                     <thead>
@@ -209,10 +228,6 @@
     <!-- Records List Page -->
     <div id="list-page" class="page container">
         <div class="glass-card large">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span id="user-display-list" style="font-size: 14px; color: var(--primary); font-weight: 600;"></span>
-                <button id="logout-btn-list" class="btn-small" style="width: auto; padding: 4px 10px; background: #ef4444;">登出</button>
-            </div>
             <h1>購物清單</h1>
             <div style="display: flex; gap: 10px; margin-bottom: 24px;">
                 <button id="back-btn" class="btn-secondary" style="margin-bottom: 0;">返回首頁</button>
@@ -239,6 +254,100 @@
                 <div id="loading-indicator" class="loading hidden">載入中...</div>
                 <div id="empty-state" class="empty-state hidden">目前還沒有任何紀錄喔！</div>
             </div>
+        </div>
+    </div>
+
+    <!-- Users List Page -->
+    <div id="users-page" class="page container">
+        <div class="glass-card large">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1>使用者列表</h1>
+                <button id="back-to-manage-btn" class="btn-small" style="width: auto;">返回管理系統</button>
+            </div>
+            <button id="export-users-excel-btn" class="btn-primary" style="margin-bottom: 20px; background-color: #10b981;">下載 Excel</button>
+            <div class="table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>帳號</th>
+                            <th>姓名</th>
+                            <th>稱謂</th>
+                            <th>電話</th>
+                            <th>Email</th>
+                            <th>縣市</th>
+                            <th>地址</th>
+                            <th>身份</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-body">
+                    </tbody>
+                </table>
+                <div id="users-loading" class="loading hidden">載入中...</div>
+                <div id="users-empty" class="empty-state hidden">目前沒有使用者資料</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Edit Modal -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="glass-card" style="max-height: 90vh; overflow-y: auto;">
+            <h2>個人資料</h2>
+            <form id="profile-form">
+                <div class="input-group">
+                    <label>帳號（不可修改）</label>
+                    <input type="text" id="profile-username" readonly style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 16px; font-family: inherit;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="profile-lastname">姓</label>
+                        <input type="text" id="profile-lastname" required placeholder="姓氏">
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label for="profile-firstname">名</label>
+                        <input type="text" id="profile-firstname" required placeholder="名字">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="profile-title">稱謂</label>
+                    <select id="profile-title" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); outline: none; font-size: 16px; font-family: inherit; color: #333;">
+                        <option value="">請選擇稱謂</option>
+                        <option value="先生">先生</option>
+                        <option value="小姐">小姐</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="profile-password">新密碼（留空表示不修改）</label>
+                    <input type="password" id="profile-password" placeholder="輸入新密碼">
+                </div>
+                <div class="input-group">
+                    <label for="profile-phone">連絡電話</label>
+                    <input type="tel" id="profile-phone" required placeholder="例如: 0912345678">
+                </div>
+                <div class="input-group">
+                    <label for="profile-email">Email</label>
+                    <input type="email" id="profile-email" required placeholder="example@email.com">
+                </div>
+                <div class="input-group">
+                    <label for="profile-city">縣市（選填）</label>
+                    <select id="profile-city" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); outline: none; font-size: 16px; font-family: inherit; color: #333;">
+                        <option value="">請選擇縣市</option>
+                        <option>台北市</option><option>新北市</option><option>桃園市</option>
+                        <option>台中市</option><option>台南市</option><option>高雄市</option>
+                        <option>基隆市</option><option>新竹市</option><option>嘉義市</option>
+                        <option>新竹縣</option><option>苗栗縣</option><option>彰化縣</option>
+                        <option>南投縣</option><option>雲林縣</option><option>嘉義縣</option>
+                        <option>屏東縣</option><option>宜蘭縣</option><option>花蓮縣</option>
+                        <option>台東縣</option><option>澎湖縣</option><option>金門縣</option>
+                        <option>連江縣</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="profile-address">地址（選填）</label>
+                    <input type="text" id="profile-address" placeholder="請輸入詳細地址">
+                </div>
+                <button type="submit" class="btn-primary">儲存變更</button>
+                <button type="button" id="cancel-profile-btn" class="btn-secondary mt-3">取消</button>
+            </form>
         </div>
     </div>
 
@@ -297,6 +406,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260425_1114"></script>
+    <script src="script.js?v=20260429_2200"></script>
 </body>
 </html>
