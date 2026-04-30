@@ -163,6 +163,8 @@ async function initDB() {
         await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0;`);
         await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS items_json JSONB DEFAULT '[]';`);
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;`);
+        // Migration: Per-product quantity limit
+        await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT 0;`);
 
         // Migration: Extended user profile fields
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name TEXT;`);
@@ -240,11 +242,12 @@ app.get('/api/products', async (req, res) => {
 
 // Create or update product (Admin only)
 app.post('/api/products', verifyToken, async (req, res) => {
-    const { id, product_id, name, short_desc, long_desc, price, image_path } = req.body;
+    const { id, product_id, name, short_desc, long_desc, price, image_path, max_qty } = req.body;
     const numericPrice = parseFloat(price) || 0;
+    const numericMaxQty = parseInt(max_qty) || 0;
     const intId = id ? parseInt(id) : null;
     
-    console.log(`Saving Product - ID: ${intId}, PID: ${product_id}, Price: ${numericPrice}`);
+    console.log(`Saving Product - ID: ${intId}, PID: ${product_id}, Price: ${numericPrice}, MaxQty: ${numericMaxQty}`);
     
     try {
         const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
@@ -252,8 +255,8 @@ app.post('/api/products', verifyToken, async (req, res) => {
 
         if (intId) {
             const result = await pool.query(
-                'UPDATE products SET product_id = $1, name = $2, short_desc = $3, long_desc = $4, price = $5, image_path = $6 WHERE id = $7 RETURNING *',
-                [product_id, name, short_desc, long_desc, numericPrice, image_path, intId]
+                'UPDATE products SET product_id = $1, name = $2, short_desc = $3, long_desc = $4, price = $5, image_path = $6, max_qty = $7 WHERE id = $8 RETURNING *',
+                [product_id, name, short_desc, long_desc, numericPrice, image_path, numericMaxQty, intId]
             );
             if (result.rows.length === 0) {
                 console.warn('Update failed: No product found with ID', intId);
@@ -262,8 +265,8 @@ app.post('/api/products', verifyToken, async (req, res) => {
             console.log('Update Success:', result.rows[0]);
         } else {
             const result = await pool.query(
-                'INSERT INTO products (product_id, name, short_desc, long_desc, price, image_path) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-                [product_id, name, short_desc, long_desc, numericPrice, image_path]
+                'INSERT INTO products (product_id, name, short_desc, long_desc, price, image_path, max_qty) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+                [product_id, name, short_desc, long_desc, numericPrice, image_path, numericMaxQty]
             );
             console.log('Insert Success:', result.rows[0]);
         }
@@ -291,13 +294,15 @@ app.delete('/api/products/:id', verifyToken, async (req, res) => {
 app.post('/api/records', verifyToken, async (req, res) => {
     const { items, description } = req.body;
     try {
-        // Retrieve global quantity limit from settings
-        const limitResult = await pool.query("SELECT value FROM settings WHERE key='quantity_limit'");
-        const limit = limitResult.rows[0] ? parseInt(limitResult.rows[0].value) : 0;
-        if (limit > 0 && Array.isArray(items)) {
+        // Validate per-product quantity limits
+        if (Array.isArray(items)) {
+            const prodResult = await pool.query('SELECT product_id, max_qty, name FROM products');
+            const prodMap = {};
+            prodResult.rows.forEach(p => { prodMap[p.product_id] = p; });
             for (const item of items) {
-                if (item.quantity && item.quantity > limit) {
-                    return res.status(400).json({ error: `每項目數量不能超過 ${limit}` });
+                const prod = prodMap[item.product_id];
+                if (prod && prod.max_qty > 0 && item.quantity > prod.max_qty) {
+                    return res.status(400).json({ error: `「${prod.name}」每次最多只能申請 ${prod.max_qty} 個` });
                 }
             }
         }

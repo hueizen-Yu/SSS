@@ -281,9 +281,18 @@ th {
     backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     z-index: 1000;
     padding: 20px;
+    overflow-y: auto;
+}
+
+.modal > .glass-card {
+    max-height: none;
+    overflow-y: visible;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
 }
 
 .modal.hidden {
