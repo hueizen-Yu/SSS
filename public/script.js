@@ -183,9 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
         pageProducts.forEach(prod => {
             const isChecked = !!selectedItems[prod.product_id];
             const qty = selectedItems[prod.product_id] || 1;
-            const maxQty = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : '';
-            const maxAttr = maxQty ? `max="${maxQty}"` : '';
-            const limitHint = maxQty ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 4px;">(訂購上限 ${maxQty})</span>` : '';
+            const maxQtyNum = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : null;
+            const limitHint = maxQtyNum ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 6px;">(訂購上限 ${maxQtyNum})</span>` : '';
 
             const card = document.createElement('div');
             card.className = `product-item ${isChecked ? 'selected' : ''}`;
@@ -199,10 +198,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
                 </div>
                 <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 4px 28px; line-height: 1.4;">${prod.short_desc || ''}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 28px;">
-                    <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 28px; margin-top: 6px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
                         <span style="font-size: 12px; color: var(--text-muted);">數量:</span>
-                        <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxAttr} class="qty-input" style="width: 50px; padding: 3px 6px; font-size: 13px;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                        <div style="display: flex; align-items: center; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.35); border-radius: 10px; overflow: hidden;">
+                            <button type="button" class="qty-btn qty-minus" style="width: 30px; height: 30px; background: transparent; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='transparent'">−</button>
+                            <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="width: 40px; text-align: center; background: transparent; border: none; color: #fff; font-size: 15px; font-weight: 700; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                            <button type="button" class="qty-btn qty-plus" style="width: 30px; height: 30px; background: transparent; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='transparent'">+</button>
+                        </div>
                         ${limitHint}
                     </div>
                     <span style="color: var(--primary); font-weight: 600; font-size: 14px;">$${Number(prod.price || 0).toLocaleString()}</span>
@@ -212,37 +215,69 @@ document.addEventListener('DOMContentLoaded', () => {
             // Event: Card Selection
             const checkbox = card.querySelector('input[type="checkbox"]');
             const qtyInput = card.querySelector('.qty-input');
+            const minusBtn = card.querySelector('.qty-minus');
+            const plusBtn  = card.querySelector('.qty-plus');
 
+            function getClampedVal() {
+                let val = parseInt(qtyInput.value) || 1;
+                if (val < 1) val = 1;
+                if (maxQtyNum && val > maxQtyNum) val = maxQtyNum;
+                return val;
+            }
+
+            function updatePlusBtn() {
+                if (maxQtyNum) {
+                    const cur = getClampedVal();
+                    plusBtn.disabled = cur >= maxQtyNum;
+                    plusBtn.style.opacity = cur >= maxQtyNum ? '0.35' : '1';
+                    plusBtn.style.cursor  = cur >= maxQtyNum ? 'not-allowed' : 'pointer';
+                }
+            }
+
+            function syncSelected() {
+                const val = getClampedVal();
+                qtyInput.value = val;
+                if (checkbox.checked) selectedItems[prod.product_id] = val;
+                updatePlusBtn();
+            }
+
+            minusBtn.addEventListener('click', () => {
+                let val = (parseInt(qtyInput.value) || 1) - 1;
+                if (val < 1) val = 1;
+                qtyInput.value = val;
+                syncSelected();
+            });
+
+            plusBtn.addEventListener('click', () => {
+                let val = (parseInt(qtyInput.value) || 1) + 1;
+                if (maxQtyNum && val > maxQtyNum) val = maxQtyNum;
+                qtyInput.value = val;
+                syncSelected();
+            });
+
+            // Direct input: always clamp immediately regardless of checkbox state
+            qtyInput.addEventListener('input', () => { syncSelected(); });
+
+            // Checkbox: clamp when checking
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
-                    selectedItems[prod.product_id] = parseInt(qtyInput.value) || 1;
+                    const val = getClampedVal();
+                    qtyInput.value = val;
+                    selectedItems[prod.product_id] = val;
                     card.classList.add('selected');
                 } else {
                     delete selectedItems[prod.product_id];
                     card.classList.remove('selected');
                 }
-            });
-
-            qtyInput.addEventListener('input', () => {
-                if (checkbox.checked) {
-                    let val = parseInt(qtyInput.value) || 1;
-                    const maxQtyNum = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : null;
-                    if (maxQtyNum && val > maxQtyNum) {
-                        val = maxQtyNum;
-                        qtyInput.value = maxQtyNum;
-                    }
-                    if (val < 1) { val = 1; qtyInput.value = 1; }
-                    selectedItems[prod.product_id] = val;
-                }
+                updatePlusBtn();
             });
 
             // Detail button (image and text)
             card.querySelectorAll('.view-detail-btn, .view-detail-text').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    showProductDetail(prod);
-                });
+                btn.addEventListener('click', () => { showProductDetail(prod); });
             });
 
+            updatePlusBtn();
             productContainer.appendChild(card);
         });
 
