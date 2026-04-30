@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const qty = selectedItems[prod.product_id] || 1;
             const maxQty = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : '';
             const maxAttr = maxQty ? `max="${maxQty}"` : '';
-            const limitHint = maxQty ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 4px;">(上限 ${maxQty})</span>` : '';
+            const limitHint = maxQty ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 4px;">(訂購上限 ${maxQty})</span>` : '';
 
             const card = document.createElement('div');
             card.className = `product-item ${isChecked ? 'selected' : ''}`;
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 28px;">
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <span style="font-size: 12px; color: var(--text-muted);">數量:</span>
-                        <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxAttr} class="qty-input" style="width: 50px; padding: 3px 6px; font-size: 13px;">
+                        <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxAttr} class="qty-input" style="width: 50px; padding: 3px 6px; font-size: 13px;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
                         ${limitHint}
                     </div>
                     <span style="color: var(--primary); font-weight: 600; font-size: 14px;">$${Number(prod.price || 0).toLocaleString()}</span>
@@ -556,6 +556,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const div = document.createElement('div');
             div.style = "display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;";
+            const maxQty = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : null;
+            const maxAttrEdit = maxQty ? `max="${maxQty}"` : '';
+            const limitHintEdit = maxQty ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 2px;">(訂購上限 ${maxQty})</span>` : '';
             div.innerHTML = `
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                     <input type="checkbox" class="edit-prod-check" data-pid="${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px;">
@@ -563,9 +566,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 </label>
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <span>數量:</span>
-                    <input type="number" class="edit-prod-qty" value="${qty}" min="0" style="width: 60px; padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);">
+                    <input type="number" class="edit-prod-qty" value="${qty}" min="0" ${maxAttrEdit} style="width: 60px; padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                    ${limitHintEdit}
                 </div>
             `;
+            // Clamp edit modal qty on input
+            const editQtyInput = div.querySelector('.edit-prod-qty');
+            if (maxQty) {
+                editQtyInput.addEventListener('input', () => {
+                    let val = parseInt(editQtyInput.value);
+                    if (!isNaN(val) && val > maxQty) {
+                        editQtyInput.value = maxQty;
+                    }
+                });
+            }
             editItemsContainer.appendChild(div);
         });
 
