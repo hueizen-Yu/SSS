@@ -159,9 +159,10 @@ async function initDB() {
         // Migration: Ensure token column exists
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token TEXT;`);
 
-        // Migration: Ensure price and items_json exists
+        // Migration: Ensure price, items_json, and status exist
         await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0;`);
         await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS items_json JSONB DEFAULT '[]';`);
+        await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS status TEXT DEFAULT '進行中';`);
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;`);
         // Migration: Per-product quantity limit
         await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT 0;`);
@@ -338,14 +339,14 @@ app.get('/api/records', verifyToken, async (req, res) => {
 
 app.put('/api/records/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
-    const { items, description } = req.body;
+    const { items, description, status } = req.body;
 
     try {
         const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
         const isAdmin = userRes.rows[0]?.is_admin;
 
         if (isAdmin) {
-            await pool.query('UPDATE records SET items_json = $1, description = $2 WHERE id = $3', [JSON.stringify(items), description, id]);
+            await pool.query('UPDATE records SET items_json = $1, description = $2, status = $3 WHERE id = $4', [JSON.stringify(items), description, status || '進行中', id]);
         } else {
             await pool.query('UPDATE records SET items_json = $1 WHERE id = $2 AND username = $3', [JSON.stringify(items), id, req.username]);
         }
@@ -502,6 +503,7 @@ app.get('/api/export-excel', verifyToken, async (req, res) => {
                 '品名': names,
                 '編號(數量)': idsWithQty,
                 '總價': totalPrice,
+                '訂單狀態': rec.status || '進行中',
                 '備註': rec.description || ''
             };
         });
@@ -509,7 +511,7 @@ app.get('/api/export-excel', verifyToken, async (req, res) => {
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         worksheet['!cols'] = [
             { wch: 20 }, { wch: 15 }, { wch: 30 },
-            { wch: 20 }, { wch: 10 }, { wch: 30 }
+            { wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 30 }
         ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, '購物清單');

@@ -502,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td data-label="編號(數量)" style="font-size: 13px;">${idsWithQty}</td>
                     <td data-label="單價" style="font-size: 13px;">${unitPrices}</td>
                     <td data-label="總價" style="color: var(--primary); font-weight: 600;">$${totalPrice.toLocaleString()}</td>
+                    <td data-label="訂單狀態" style="font-weight: bold; color: ${rec.status === '未完成' ? '#ef4444' : rec.status === '已確認' ? '#10b981' : rec.status === '待出貨' ? '#f59e0b' : rec.status === '已出貨' ? '#8b5cf6' : '#3b82f6'};">${rec.status || '進行中'}</td>
                     <td data-label="操作">
                         <button class="btn-small edit-btn" data-id="${rec.id}">編輯</button>
                         <button class="btn-small delete-btn" data-id="${rec.id}" style="background: #ef4444;">刪除</button>
@@ -552,6 +553,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
         document.getElementById('edit-description').readOnly = !isAdmin;
+        document.getElementById('edit-status').value = rec.status || '進行中';
+        document.getElementById('edit-status').disabled = !isAdmin;
         editModal.classList.remove('hidden');
     }
 
@@ -559,6 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const id = document.getElementById('edit-id').value;
         const description = document.getElementById('edit-description').value;
+        const status = document.getElementById('edit-status').value;
         const items = [];
         
         document.querySelectorAll('.edit-prod-check').forEach(check => {
@@ -573,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`/api/records/${id}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({ items, description })
+                body: JSON.stringify({ items, description, status })
             });
 
             if (res.ok) {
