@@ -291,6 +291,16 @@ app.delete('/api/products/:id', verifyToken, async (req, res) => {
 app.post('/api/records', verifyToken, async (req, res) => {
     const { items, description } = req.body;
     try {
+        // Retrieve global quantity limit from settings
+        const limitResult = await pool.query("SELECT value FROM settings WHERE key='quantity_limit'");
+        const limit = limitResult.rows[0] ? parseInt(limitResult.rows[0].value) : 0;
+        if (limit > 0 && Array.isArray(items)) {
+            for (const item of items) {
+                if (item.quantity && item.quantity > limit) {
+                    return res.status(400).json({ error: `每項目數量不能超過 ${limit}` });
+                }
+            }
+        }
         const date = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
         await pool.query(
             'INSERT INTO records (username, items_json, description, date) VALUES ($1, $2, $3, $4)',

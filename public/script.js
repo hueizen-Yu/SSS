@@ -90,6 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ogDescInput && settings.og_description !== undefined) {
                 ogDescInput.value = settings.og_description || '';
             }
+            const qtyLimitInput = document.getElementById('set-quantity-limit');
+            if (qtyLimitInput && settings.quantity_limit !== undefined) {
+                qtyLimitInput.value = settings.quantity_limit || '0';
+            }
         } catch (err) {
             console.error('Failed to fetch settings', err);
         }
@@ -123,6 +127,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.ok) {
                 alert('描述已儲存！請重新分享連結以更新預覽。');
+            }
+        } catch (err) {
+            alert('儲存失敗');
+        }
+    });
+
+    document.getElementById('save-quantity-limit-btn')?.addEventListener('click', async () => {
+        const newLimit = document.getElementById('set-quantity-limit').value;
+        if (newLimit === '' || isNaN(parseInt(newLimit)) || parseInt(newLimit) < 0) {
+            alert('請輸入有效的數字（0 表示無限制）');
+            return;
+        }
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ key: 'quantity_limit', value: String(parseInt(newLimit)) })
+            });
+            if (res.ok) {
+                alert('數量上限已儲存！');
+            } else {
+                const d = await res.json();
+                alert('儲存失敗：' + (d.error || '未知錯誤'));
             }
         } catch (err) {
             alert('儲存失敗');
@@ -607,6 +634,17 @@ document.addEventListener('DOMContentLoaded', () => {
             showPage(formPage);
             fetchProducts();
             fetchSettings();
+            // Re-confirm isAdmin from DB to catch any toggle-admin updates
+            fetch('/api/profile', { headers: getAuthHeaders() })
+                .then(r => r.json())
+                .then(profile => {
+                    if (profile.username) {
+                        const latestIsAdmin = !!profile.is_admin;
+                        sessionStorage.setItem('isAdmin', latestIsAdmin);
+                        applyLoginState(profile.username, latestIsAdmin);
+                    }
+                })
+                .catch(() => {});
         } else {
             alert('登入失敗，請確認帳號與密碼');
         }

@@ -197,6 +197,13 @@
             <div style="margin-top: 40px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
                 <h2>網站全局設定</h2>
                 <div class="input-group" style="margin-top: 15px;">
+                    <label for="set-quantity-limit">每項目數量上限 (數字, 0 表示無限制)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="set-quantity-limit" placeholder="例如: 10" min="0" style="flex:1;">
+                        <button id="save-quantity-limit-btn" class="btn-small" style="width: 100px;">儲存</button>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 15px;">
                     <label for="set-form-title">首頁標題名稱</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="set-form-title" placeholder="修改首頁大標題">
