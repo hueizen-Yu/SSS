@@ -558,6 +558,10 @@ app.post('/api/users/toggle-admin', verifyToken, async (req, res) => {
         if (username === req.username && !is_admin) {
             return res.status(400).json({ error: '不可取消自己的管理者權限' });
         }
+        // Protect super admin Stanley
+        if (username === 'Stanley' && !is_admin) {
+            return res.status(400).json({ error: '系統預設管理者 Stanley 的權限不可取消' });
+        }
         await pool.query('UPDATE users SET is_admin = $1 WHERE username = $2', [is_admin, username]);
         res.json({ success: true });
     } catch (err) {
@@ -575,6 +579,11 @@ app.delete('/api/users/:username', verifyToken, async (req, res) => {
         // Prevent self-deletion
         if (req.params.username === req.username) {
             return res.status(400).json({ error: '不可刪除自己的帳號' });
+        }
+        
+        // Protect super admin Stanley
+        if (req.params.username === 'Stanley') {
+            return res.status(400).json({ error: '系統預設管理者 Stanley 不可刪除' });
         }
         
         // Delete user

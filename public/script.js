@@ -832,12 +832,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td data-label="縣市">${u.city || '-'}</td>
                     <td data-label="地址">${u.address || '-'}</td>
                     <td data-label="身份">
-                        <button class="btn-small toggle-admin-btn" data-username="${u.username}" style="background: ${u.is_admin ? '#f59e0b' : '#6b7280'}; font-size: 12px; padding: 4px 10px;">
+                        <button class="btn-small toggle-admin-btn" data-username="${u.username}" ${u.username === 'Stanley' ? 'disabled style="background: #6b7280; font-size: 12px; padding: 4px 10px; cursor: not-allowed; opacity: 0.5;"' : `style="background: ${u.is_admin ? '#f59e0b' : '#6b7280'}; font-size: 12px; padding: 4px 10px;"`}>
                             ${u.is_admin ? '🔑 管理者' : '👤 一般'}
                         </button>
                     </td>
                     <td data-label="操作">
-                        <button class="btn-small delete-user-btn" data-username="${u.username}" style="background: #ef4444; font-size: 12px; padding: 4px 10px;">刪除</button>
+                        <button class="btn-small delete-user-btn" data-username="${u.username}" ${u.username === 'Stanley' ? 'disabled style="background: #ef4444; font-size: 12px; padding: 4px 10px; cursor: not-allowed; opacity: 0.5;"' : 'style="background: #ef4444; font-size: 12px; padding: 4px 10px;"'}>刪除</button>
                     </td>
                 `;
 
