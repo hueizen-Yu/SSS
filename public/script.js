@@ -552,9 +552,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        document.getElementById('edit-description').readOnly = isAdmin;
+        document.getElementById('edit-description').disabled = isAdmin;
         document.getElementById('edit-admin-note').value = rec.admin_note || '';
-        document.getElementById('edit-admin-note').readOnly = !isAdmin;
+        document.getElementById('edit-admin-note').disabled = !isAdmin;
         document.getElementById('edit-status').value = rec.status || '進行中';
         document.getElementById('edit-status').disabled = !isAdmin;
         editModal.classList.remove('hidden');
