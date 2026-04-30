@@ -566,6 +566,29 @@ app.post('/api/users/toggle-admin', verifyToken, async (req, res) => {
     }
 });
 
+// Delete user (Admin only)
+app.delete('/api/users/:username', verifyToken, async (req, res) => {
+    try {
+        const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
+        if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
+        
+        // Prevent self-deletion
+        if (req.params.username === req.username) {
+            return res.status(400).json({ error: '不可刪除自己的帳號' });
+        }
+        
+        // Delete user
+        await pool.query('DELETE FROM users WHERE username = $1', [req.params.username]);
+        // Optionally delete their records too
+        await pool.query('DELETE FROM records WHERE username = $1', [req.params.username]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete User Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Export users to Excel (Admin only)
 app.get('/api/export-users-excel', verifyToken, async (req, res) => {
     try {

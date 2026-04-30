@@ -836,6 +836,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${u.is_admin ? '🔑 管理者' : '👤 一般'}
                         </button>
                     </td>
+                    <td data-label="操作">
+                        <button class="btn-small delete-user-btn" data-username="${u.username}" style="background: #ef4444; font-size: 12px; padding: 4px 10px;">刪除</button>
+                    </td>
                 `;
 
                 tr.querySelector('.toggle-admin-btn').addEventListener('click', async () => {
@@ -855,6 +858,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             const d = await toggleRes.json();
                             alert('操作失敗：' + (d.error || '未知錯誤'));
+                        }
+                    } catch (err) {
+                        alert('操作失敗');
+                    }
+                });
+
+                tr.querySelector('.delete-user-btn').addEventListener('click', async () => {
+                    const targetUser = u.username;
+                    if (!confirm(`確定要刪除使用者「${targetUser}」嗎？這個操作無法復原！`)) return;
+                    try {
+                        const delRes = await fetch(`/api/users/${targetUser}`, {
+                            method: 'DELETE',
+                            headers: getAuthHeaders()
+                        });
+                        if (delRes.ok) {
+                            alert(`已成功刪除使用者「${targetUser}」！`);
+                            fetchUsers();
+                        } else {
+                            const d = await delRes.json();
+                            alert('刪除失敗：' + (d.error || '未知錯誤'));
                         }
                     } catch (err) {
                         alert('操作失敗');
