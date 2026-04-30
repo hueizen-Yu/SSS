@@ -225,7 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             qtyInput.addEventListener('input', () => {
                 if (checkbox.checked) {
-                    selectedItems[prod.product_id] = parseInt(qtyInput.value) || 1;
+                    let val = parseInt(qtyInput.value) || 1;
+                    const maxQtyNum = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : null;
+                    if (maxQtyNum && val > maxQtyNum) {
+                        val = maxQtyNum;
+                        qtyInput.value = maxQtyNum;
+                    }
+                    if (val < 1) { val = 1; qtyInput.value = 1; }
+                    selectedItems[prod.product_id] = val;
                 }
             });
 
@@ -421,6 +428,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (items.length === 0) {
             alert('請至少勾選一項產品！');
             return;
+        }
+
+        // Client-side quantity limit validation
+        for (const item of items) {
+            const prod = products.find(p => p.product_id === item.product_id);
+            if (prod && prod.max_qty > 0 && item.quantity > prod.max_qty) {
+                alert(`「${prod.name}」每次最多只能申請 ${prod.max_qty} 個！`);
+                return;
+            }
         }
 
         try {
