@@ -175,6 +175,8 @@ async function initDB() {
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT;`);
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS city TEXT;`);
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;`);
+        // Migration: Registration timestamp
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();`);
 
         // Seed the admin user
         await client.query(`
@@ -539,7 +541,7 @@ app.get('/api/users', verifyToken, async (req, res) => {
         if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
 
         const result = await pool.query(
-            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin FROM users ORDER BY id ASC'
+            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin, created_at FROM users ORDER BY is_admin DESC, created_at DESC'
         );
         res.json(result.rows);
     } catch (err) {
@@ -605,10 +607,11 @@ app.get('/api/export-users-excel', verifyToken, async (req, res) => {
         if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
 
         const result = await pool.query(
-            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin FROM users ORDER BY id ASC'
+            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin, created_at FROM users ORDER BY is_admin DESC, created_at DESC'
         );
 
         const exportData = result.rows.map(u => ({
+            '註冊時間': u.created_at ? new Date(u.created_at).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }) : '',
             '帳號': u.username,
             '姓': u.last_name || '',
             '名': u.first_name || '',
@@ -622,7 +625,7 @@ app.get('/api/export-users-excel', verifyToken, async (req, res) => {
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         worksheet['!cols'] = [
-            { wch: 15 }, { wch: 8 }, { wch: 10 }, { wch: 8 },
+            { wch: 20 }, { wch: 15 }, { wch: 8 }, { wch: 10 }, { wch: 8 },
             { wch: 15 }, { wch: 25 }, { wch: 10 }, { wch: 30 }, { wch: 10 }
         ];
         const workbook = XLSX.utils.book_new();

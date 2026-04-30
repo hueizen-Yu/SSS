@@ -823,7 +823,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!users || users.length === 0) { usersEmpty.classList.remove('hidden'); return; }
             users.forEach(u => {
                 const tr = document.createElement('tr');
+                const regTime = u.created_at
+                    ? new Date(u.created_at).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+                    : '-';
                 tr.innerHTML = `
+                    <td data-label="註冊時間" style="font-size: 12px; color: var(--text-muted);">${regTime}</td>
                     <td data-label="帳號">${u.username}</td>
                     <td data-label="姓名">${(u.last_name || '') + (u.first_name || '') || '-'}</td>
                     <td data-label="稱謂">${u.gender || '-'}</td>
