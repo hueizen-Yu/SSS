@@ -552,7 +552,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        document.getElementById('edit-description').readOnly = !isAdmin;
+        document.getElementById('edit-description').readOnly = isAdmin;
+        document.getElementById('edit-admin-note').value = rec.admin_note || '';
+        document.getElementById('edit-admin-note').readOnly = !isAdmin;
         document.getElementById('edit-status').value = rec.status || '進行中';
         document.getElementById('edit-status').disabled = !isAdmin;
         editModal.classList.remove('hidden');
@@ -562,6 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const id = document.getElementById('edit-id').value;
         const description = document.getElementById('edit-description').value;
+        const admin_note = document.getElementById('edit-admin-note').value;
         const status = document.getElementById('edit-status').value;
         const items = [];
         
@@ -577,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`/api/records/${id}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({ items, description, status })
+                body: JSON.stringify({ items, description, admin_note, status })
             });
 
             if (res.ok) {
@@ -605,6 +608,11 @@ document.addEventListener('DOMContentLoaded', () => {
         userDisplayName.textContent = username;
         // Admin button
         adminManageBtn.style.display = isAdmin ? 'inline-block' : 'none';
+        // Hide submit container for admins
+        const submitContainer = document.getElementById('submit-container');
+        if (submitContainer) {
+            submitContainer.style.display = isAdmin ? 'none' : 'block';
+        }
         // Unlock action buttons
         submitBtn.disabled = false;
         submitBtn.style.opacity = '1';
@@ -620,6 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
         guestLoginBtn.style.display = 'inline-flex';
         userNav.style.display = 'none';
         adminManageBtn.style.display = 'none';
+        const submitContainer = document.getElementById('submit-container');
+        if (submitContainer) submitContainer.style.display = 'block';
         // Lock action buttons
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.4';

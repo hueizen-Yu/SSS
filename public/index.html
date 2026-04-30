@@ -154,16 +154,16 @@
                 </div>
 
                 <!-- Submit button: locked when not logged in -->
-                <div style="position: relative;">
-                    <button type="submit" id="submit-btn" class="btn-primary" disabled style="opacity: 0.4; cursor: not-allowed;">送出需求清單</button>
-                    <div id="submit-lock-hint" style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 6px;">⚠️ 請先登入才能送出需求單</div>
+                <div id="submit-container" style="position: relative;">
+                    <button type="submit" id="submit-btn" class="btn-primary" disabled style="opacity: 0.4; cursor: not-allowed;">送出訂購單</button>
+                    <div id="submit-lock-hint" style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 6px;">⚠️ 請先登入才能送出訂購單</div>
                 </div>
             </form>
 
             <!-- View records button: locked when not logged in -->
             <div style="position: relative; margin-top: 10px;">
-                <button id="view-records-btn" class="btn-secondary mt-3" disabled style="opacity: 0.4; cursor: not-allowed;">直接查看歷史記錄</button>
-                <div id="records-lock-hint" style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 6px;">⚠️ 請先登入才能查看歷史紀錄</div>
+                <button id="view-records-btn" class="btn-secondary mt-3" disabled style="opacity: 0.4; cursor: not-allowed;">查看訂購紀錄</button>
+                <div id="records-lock-hint" style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 6px;">⚠️ 請先登入才能查看訂購紀錄</div>
             </div>
         </div>
     </div>
@@ -408,15 +408,19 @@
     <!-- Admin Edit Record Modal -->
     <div id="edit-modal" class="modal hidden">
         <div class="glass-card">
-            <h2>編輯申請需求</h2>
+            <h2>編輯訂購需求</h2>
             <form id="edit-form">
                 <input type="hidden" id="edit-id">
                 <div id="edit-items-container" class="checkbox-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
                     <!-- Dynamic items for edit will be here -->
                 </div>
                 <div class="input-group">
-                    <label for="edit-description">需求備註 (僅限管理者)</label>
+                    <label for="edit-description">使用者備註 (僅限使用者編輯)</label>
                     <textarea id="edit-description" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); min-height: 80px; font-family: inherit; color: #fff;"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="edit-admin-note">管理者備註 (僅限管理者編輯)</label>
+                    <textarea id="edit-admin-note" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); min-height: 80px; font-family: inherit; color: #fff;"></textarea>
                 </div>
                 <div class="input-group">
                     <label for="edit-status">訂單狀態 (僅限管理者)</label>

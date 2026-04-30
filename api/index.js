@@ -163,6 +163,7 @@ async function initDB() {
         await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0;`);
         await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS items_json JSONB DEFAULT '[]';`);
         await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS status TEXT DEFAULT '進行中';`);
+        await client.query(`ALTER TABLE records ADD COLUMN IF NOT EXISTS admin_note TEXT DEFAULT '';`);
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;`);
         // Migration: Per-product quantity limit
         await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT 0;`);
@@ -339,16 +340,16 @@ app.get('/api/records', verifyToken, async (req, res) => {
 
 app.put('/api/records/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
-    const { items, description, status } = req.body;
+    const { items, description, status, admin_note } = req.body;
 
     try {
         const userRes = await pool.query('SELECT is_admin FROM users WHERE username = $1', [req.username]);
         const isAdmin = userRes.rows[0]?.is_admin;
 
         if (isAdmin) {
-            await pool.query('UPDATE records SET items_json = $1, description = $2, status = $3 WHERE id = $4', [JSON.stringify(items), description, status || '進行中', id]);
+            await pool.query('UPDATE records SET items_json = $1, admin_note = $2, status = $3 WHERE id = $4', [JSON.stringify(items), admin_note || '', status || '進行中', id]);
         } else {
-            await pool.query('UPDATE records SET items_json = $1 WHERE id = $2 AND username = $3', [JSON.stringify(items), id, req.username]);
+            await pool.query('UPDATE records SET items_json = $1, description = $2 WHERE id = $3 AND username = $4', [JSON.stringify(items), description || '', id, req.username]);
         }
         res.json({ success: true });
     } catch (err) {
@@ -504,14 +505,15 @@ app.get('/api/export-excel', verifyToken, async (req, res) => {
                 '編號(數量)': idsWithQty,
                 '總價': totalPrice,
                 '訂單狀態': rec.status || '進行中',
-                '備註': rec.description || ''
+                '使用者備註': rec.description || '',
+                '管理者備註': rec.admin_note || ''
             };
         });
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         worksheet['!cols'] = [
             { wch: 20 }, { wch: 15 }, { wch: 30 },
-            { wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 30 }
+            { wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 30 }, { wch: 30 }
         ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, '購物清單');
