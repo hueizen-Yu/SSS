@@ -11,6 +11,7 @@
     <meta name="description" content=" ">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="background-blobs">
@@ -390,8 +391,8 @@
                     <textarea id="prod-short-desc" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); min-height: 60px; font-family: inherit; color: #fff;"></textarea>
                 </div>
                 <div class="input-group">
-                    <label for="prod-long-desc">產品詳細介紹</label>
-                    <textarea id="prod-long-desc" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); min-height: 100px; font-family: inherit; color: #fff;"></textarea>
+                    <label for="prod-long-desc">產品詳細介紹 <span style="font-size: 11px; color: #a5b4fc;">（支援 Markdown：**粗體** *斜體* - 清單 ## 標題 換行請按兩次 Enter）</span></label>
+                    <textarea id="prod-long-desc" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.5); min-height: 120px; font-family: monospace; color: #fff;"></textarea>
                 </div>
                 <div class="input-group">
                     <label for="prod-image">產品圖片</label>

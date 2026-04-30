@@ -247,7 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('detail-id').textContent = prod.product_id;
         document.getElementById('detail-name').textContent = prod.name;
         document.getElementById('detail-price').textContent = `$${Number(prod.price || 0).toLocaleString()}`;
-        document.getElementById('detail-description').textContent = prod.long_desc || '暫無詳細描述。';
+        const rawDesc = prod.long_desc || '暫無詳細描述。';
+        // Render as Markdown if marked is available, else plain text
+        if (typeof marked !== 'undefined') {
+            document.getElementById('detail-description').innerHTML = marked.parse(rawDesc);
+        } else {
+            document.getElementById('detail-description').textContent = rawDesc;
+        }
         document.getElementById('detail-image').src = prod.image_path || 'images/placeholder.png';
         showPage(detailPage);
     }
