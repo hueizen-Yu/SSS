@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''}>
                         <span class="product-id">${prod.product_id}</span>
-                        <span class="product-name">${prod.name}</span>
+                        <span class="product-name view-detail-text" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;" onmouseover="this.style.color='var(--secondary)'" onmouseout="this.style.color='inherit'">${prod.name}</span>
                     </div>
                     <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
                 </div>
@@ -229,9 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Detail button
-            card.querySelector('.view-detail-btn').addEventListener('click', () => {
-                showProductDetail(prod);
+            // Detail button (image and text)
+            card.querySelectorAll('.view-detail-btn, .view-detail-text').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    showProductDetail(prod);
+                });
             });
 
             productContainer.appendChild(card);
