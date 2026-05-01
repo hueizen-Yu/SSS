@@ -117,7 +117,17 @@
                 </div>
                 <button type="submit" class="btn-primary">註冊</button>
             </form>
-            <div style="text-align: center; margin-top: 15px;">
+
+            <div id="verify-code-section" style="display: none; text-align: center; margin-top: 20px;">
+                <p class="subtitle" style="margin-bottom: 20px; color: var(--primary); font-weight: bold;">驗證碼已寄至您的信箱，請輸入 6 位數驗證碼：</p>
+                <div class="input-group">
+                    <input type="text" id="verify-code-input" placeholder="000000" maxlength="6" style="text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: bold;">
+                </div>
+                <button id="verify-code-btn" class="btn-primary" style="margin-top: 10px;">送出驗證</button>
+                <a href="#" id="resend-verify-code-btn" style="color: #ef4444; text-decoration: none; font-size: 14px; margin-top: 15px; display: inline-block;">沒收到驗證碼？點此重新發送</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 15px;" id="register-footer-links">
                 <a href="#" id="go-to-login" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">已經有帳號？返回登入</a>
             </div>
         </div>
@@ -442,6 +452,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260429_2222"></script>
+    <script src="script.js?v=20260501_1450"></script>
 </body>
 </html>
