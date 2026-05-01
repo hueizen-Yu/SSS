@@ -82,7 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('register-form').style.display = 'none';
         document.getElementById('verify-code-section').style.display = 'block';
         document.getElementById('register-footer-links').style.display = 'none';
+        document.getElementById('verify-footer-links').style.display = 'block';
     }
+
 
 
     async function fetchSettings() {
@@ -90,10 +92,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/settings');
             const settings = await res.json();
             if (settings.form_title) {
-                formTitleH1.innerHTML = settings.form_title.replace(/\|/g, '<br>');
+                const cleanTitle = settings.form_title.replace(/\|/g, '');
+                const htmlTitle  = settings.form_title.replace(/\|/g, '<br>');
+                
+                formTitleH1.innerHTML = htmlTitle;
                 setFormTitleInput.value = settings.form_title;
-                document.title = settings.form_title.replace(/\|/g, '');
+                document.title = cleanTitle;
+                
+                // Update Login & Register page titles
+                const loginTitle = document.getElementById('login-title');
+                const registerTitle = document.getElementById('register-title');
+                if (loginTitle) loginTitle.innerHTML = htmlTitle;
+                if (registerTitle) registerTitle.innerHTML = htmlTitle;
             }
+
             const ogDescInput = document.getElementById('set-og-description');
             if (ogDescInput && settings.og_description !== undefined) {
                 ogDescInput.value = settings.og_description || '';
@@ -828,8 +840,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('register-form').style.display = 'block';
         document.getElementById('verify-code-section').style.display = 'none';
         document.getElementById('register-footer-links').style.display = 'block';
+        document.getElementById('verify-footer-links').style.display = 'none';
         showPage(registerPage);
     });
+
 
     document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
     
@@ -837,6 +851,14 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         showVerificationUI();
     });
+
+    document.querySelectorAll('.back-to-home-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPage(formPage);
+        });
+    });
+
 
     viewRecordsBtn.addEventListener('click', () => { showPage(listPage); fetchRecords(); });
     backBtn.addEventListener('click', () => showPage(formPage));

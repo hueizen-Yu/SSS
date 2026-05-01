@@ -22,7 +22,8 @@
     <!-- Login Page -->
     <div id="login-page" class="page container">
         <div class="glass-card">
-            <h1>系統登入</h1>
+            <h1 id="login-title">系統登入</h1>
+
             <p class="subtitle">請輸入您的帳號與密碼</p>
             <form id="login-form">
                 <div class="input-group">
@@ -41,6 +42,8 @@
                 <a href="#" id="resend-verify-btn" style="color: #ef4444; text-decoration: none; font-size: 14px; margin-top: 10px; display: none;">尚未收到驗證信？重新發送</a>
                 <br id="verify-br" style="display: none;">
                 <a href="#" id="go-to-verify-btn" style="color: var(--primary); text-decoration: none; font-size: 14px; margin-top: 10px; display: none;">我有驗證碼了，前往驗證</a>
+                <a href="#" class="back-to-home-link" style="color: var(--text-muted); text-decoration: none; font-size: 14px; display: block; margin-top: 15px;">← 返回首頁</a>
+
 
             </div>
         </div>
@@ -49,7 +52,8 @@
     <!-- Register Page -->
     <div id="register-page" class="page container">
         <div class="glass-card">
-            <h1>註冊帳號</h1>
+            <h1 id="register-title">註冊帳號</h1>
+
             <p class="subtitle">建立您的專屬購物需求帳號</p>
             <form id="register-form">
                 <div style="display: flex; gap: 10px;">
@@ -132,7 +136,13 @@
 
             <div style="text-align: center; margin-top: 15px;" id="register-footer-links">
                 <a href="#" id="go-to-login" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">已經有帳號？返回登入</a>
+                <a href="#" class="back-to-home-link" style="color: var(--text-muted); text-decoration: none; font-size: 14px; display: block; margin-top: 15px;">← 返回首頁</a>
             </div>
+            
+            <div id="verify-footer-links" style="display: none; text-align: center; margin-top: 15px;">
+                <a href="#" class="back-to-home-link" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">← 返回首頁</a>
+            </div>
+
         </div>
     </div>
 
