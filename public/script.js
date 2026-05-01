@@ -77,6 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    function showVerificationUI() {
+        showPage(registerPage);
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('verify-code-section').style.display = 'block';
+        document.getElementById('register-footer-links').style.display = 'none';
+    }
+
+
     async function fetchSettings() {
         try {
             const res = await fetch('/api/settings');
@@ -745,11 +753,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.code === 'UNVERIFIED') {
                 alert(data.error);
                 document.getElementById('resend-verify-btn').style.display = 'inline-block';
+                document.getElementById('go-to-verify-btn').style.display = 'inline-block';
+                const vBr = document.getElementById('verify-br');
+                if (vBr) vBr.style.display = 'block';
                 sessionStorage.setItem('temp_unverified_username', username);
             } else {
                 alert(data.error || '登入失敗，請確認帳號與密碼');
             }
         }
+
     });
 
     registerForm.addEventListener('submit', async (e) => {
@@ -798,8 +810,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Guest login button → go to login page
     guestLoginBtn.addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
 
-    document.getElementById('go-to-register').addEventListener('click', (e) => { e.preventDefault(); showPage(registerPage); });
+    document.getElementById('go-to-register').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('register-form').style.display = 'block';
+        document.getElementById('verify-code-section').style.display = 'none';
+        document.getElementById('register-footer-links').style.display = 'block';
+        showPage(registerPage);
+    });
+
     document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
+    
+    document.getElementById('go-to-verify-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showVerificationUI();
+    });
+
     viewRecordsBtn.addEventListener('click', () => { showPage(listPage); fetchRecords(); });
     backBtn.addEventListener('click', () => showPage(formPage));
     backToFormBtn.addEventListener('click', () => showPage(formPage));
@@ -824,12 +849,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     alert(data.message);
                     document.getElementById('resend-verify-btn').style.display = 'none';
+                    document.getElementById('go-to-verify-btn').style.display = 'none';
+                    const vBr = document.getElementById('verify-br');
+                    if (vBr) vBr.style.display = 'none';
+                    showVerificationUI();
                 } else {
                     alert('重發失敗：' + (data.error || '未知錯誤'));
                 }
             } catch (err) {
                 alert('無法連接伺服器');
             }
+
         });
     }
 
