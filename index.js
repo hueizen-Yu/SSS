@@ -222,17 +222,16 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: '帳號名稱已被使用', code: 'DUPLICATE_USERNAME' });
         }
 
-        const vToken = crypto.randomBytes(20).toString('hex');
+        const vToken = Math.floor(100000 + Math.random() * 900000).toString();
         const sql = `INSERT INTO users (username, password, gender, last_name, first_name, phone, email, city, address, is_verified, verification_token)
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE, $10)`;
         await pool.query(sql, [username, password, gender, last_name, first_name, phone, email, city || null, address || null, vToken]);
         
-        const verifyUrl = `${req.protocol}://${req.get('host')}/api/verify?token=${vToken}`;
         const mailOptions = {
             from: process.env.SMTP_USER,
             to: email,
-            subject: '帳號註冊驗證信',
-            text: `您好，${first_name} ${last_name}：\n\n感謝您註冊！請點擊以下連結以驗證您的 Email 信箱並啟用帳號：\n\n${verifyUrl}\n\n如果您沒有註冊此帳號，請忽略此信件。`
+            subject: '帳號註冊驗證碼',
+            text: `您好，${first_name} ${last_name}：\n\n感謝您註冊！您的驗證碼為：${vToken}\n請在註冊頁面輸入此 6 位數驗證碼以啟用您的帳號。\n\n如果您沒有註冊此帳號，請忽略此信件。`
         };
         
         transporter.sendMail(mailOptions, (error, info) => {
@@ -250,18 +249,18 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-app.get('/api/verify', async (req, res) => {
-    const token = req.query.token;
-    if (!token) return res.status(400).send('無效的驗證碼');
+app.post('/api/verify-code', async (req, res) => {
+    const { username, code } = req.body;
+    if (!username || !code) return res.status(400).json({ error: '缺少驗證資訊' });
     try {
-        const result = await pool.query('UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE verification_token = $1 RETURNING *', [token]);
+        const result = await pool.query('UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE username = $1 AND verification_token = $2 RETURNING *', [username, code]);
         if (result.rows.length === 0) {
-            return res.send('<script>alert("驗證碼無效或已驗證過。"); window.location.href="/?verified=false";</script>');
+            return res.status(400).json({ error: '驗證碼錯誤或已過期' });
         }
-        res.redirect('/?verified=true');
+        res.json({ message: '驗證成功' });
     } catch (err) {
         console.error('Verify Error:', err);
-        res.status(500).send('伺服器錯誤');
+        res.status(500).json({ error: '伺服器錯誤' });
     }
 });
 
@@ -278,16 +277,15 @@ app.post('/api/resend-verification', async (req, res) => {
 
         let vToken = user.verification_token;
         if (!vToken) {
-            vToken = crypto.randomBytes(20).toString('hex');
+            vToken = Math.floor(100000 + Math.random() * 900000).toString();
             await pool.query('UPDATE users SET verification_token = $1 WHERE id = $2', [vToken, user.id]);
         }
 
-        const verifyUrl = `${req.protocol}://${req.get('host')}/api/verify?token=${vToken}`;
         const mailOptions = {
             from: process.env.SMTP_USER,
             to: user.email,
-            subject: '重新寄送：帳號註冊驗證信',
-            text: `您好，${user.first_name || ''} ${user.last_name || ''}：\n\n這是您要求的驗證連結。請點擊以下連結以驗證您的 Email 信箱並啟用帳號：\n\n${verifyUrl}\n\n如果您沒有註冊此帳號，請忽略此信件。`
+            subject: '重新寄送：帳號註冊驗證碼',
+            text: `您好，${user.first_name || ''} ${user.last_name || ''}：\n\n這是您要求的驗證碼。您的驗證碼為：${vToken}\n請在畫面上輸入此 6 位數驗證碼以啟用您的帳號。\n\n如果您沒有註冊此帳號，請忽略此信件。`
         };
         
         transporter.sendMail(mailOptions, (error, info) => {
