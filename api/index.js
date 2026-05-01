@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const XLSX = require('xlsx');
-
+const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -72,6 +72,14 @@ const pool = new Pool({
     }
 });
 
+// NodeMailer Transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+    }
+});
 // Database pool error handling
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
@@ -178,6 +186,12 @@ async function initDB() {
         // Migration: Registration timestamp
         await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();`);
 
+        // Migration: Email verification
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;`);
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token TEXT;`);
+        // Mark existing users as verified
+        await client.query(`UPDATE users SET is_verified = TRUE WHERE verification_token IS NULL;`);
+
         // Seed the admin user
         await client.query(`
             INSERT INTO users (username, password, gender, is_admin)
@@ -208,13 +222,84 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: '帳號名稱已被使用', code: 'DUPLICATE_USERNAME' });
         }
 
-        const sql = `INSERT INTO users (username, password, gender, last_name, first_name, phone, email, city, address)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-        await pool.query(sql, [username, password, gender, last_name, first_name, phone, email, city || null, address || null]);
-        res.json({ message: '註冊成功' });
+        const vToken = Math.floor(100000 + Math.random() * 900000).toString();
+        const sql = `INSERT INTO users (username, password, gender, last_name, first_name, phone, email, city, address, is_verified, verification_token)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE, $10)`;
+        await pool.query(sql, [username, password, gender, last_name, first_name, phone, email, city || null, address || null, vToken]);
+        
+        const mailOptions = {
+            from: process.env.SMTP_USER,
+            to: email,
+            subject: '帳號註冊驗證碼',
+            text: `您好，${first_name} ${last_name}：\n\n感謝您註冊！您的驗證碼為：${vToken}\n請在註冊頁面輸入此 6 位數驗證碼以啟用您的帳號。\n\n如果您沒有註冊此帳號，請忽略此信件。`
+        };
+        
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Email send error:', error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
+
+        res.json({ message: '註冊成功，請前往信箱收取驗證信！' });
     } catch (err) {
         console.error('Register Error:', err);
         return res.status(500).json({ error: '伺服器錯誤，請稍後再試' });
+    }
+});
+
+app.post('/api/verify-code', async (req, res) => {
+    const { username, code } = req.body;
+    if (!username || !code) return res.status(400).json({ error: '缺少驗證資訊' });
+    try {
+        const result = await pool.query('UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE username = $1 AND verification_token = $2 RETURNING *', [username, code]);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: '驗證碼錯誤或已過期' });
+        }
+        res.json({ message: '驗證成功' });
+    } catch (err) {
+        console.error('Verify Error:', err);
+        res.status(500).json({ error: '伺服器錯誤' });
+    }
+});
+
+app.post('/api/resend-verification', async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: '請提供帳號名稱' });
+    
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (result.rows.length === 0) return res.status(404).json({ error: '找不到該帳號' });
+        
+        const user = result.rows[0];
+        if (user.is_verified) return res.status(400).json({ error: '該帳號已經驗證過了' });
+
+        let vToken = user.verification_token;
+        if (!vToken) {
+            vToken = Math.floor(100000 + Math.random() * 900000).toString();
+            await pool.query('UPDATE users SET verification_token = $1 WHERE id = $2', [vToken, user.id]);
+        }
+
+        const mailOptions = {
+            from: process.env.SMTP_USER,
+            to: user.email,
+            subject: '重新寄送：帳號註冊驗證碼',
+            text: `您好，${user.first_name || ''} ${user.last_name || ''}：\n\n這是您要求的驗證碼。您的驗證碼為：${vToken}\n請在畫面上輸入此 6 位數驗證碼以啟用您的帳號。\n\n如果您沒有註冊此帳號，請忽略此信件。`
+        };
+        
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Email send error:', error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
+
+        res.json({ message: '驗證信已重新發送，請檢查您的信箱！' });
+    } catch (err) {
+        console.error('Resend Verify Error:', err);
+        res.status(500).json({ error: '伺服器錯誤' });
     }
 });
 
@@ -225,9 +310,15 @@ app.post('/api/login', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(401).json({ error: '帳號或密碼錯誤' });
         }
+
+        const user = result.rows[0];
+        if (!user.is_verified) {
+            return res.status(403).json({ error: '尚未完成 Email 驗證，請至您的信箱收取驗證信。', code: 'UNVERIFIED' });
+        }
+
         const token = crypto.randomBytes(16).toString('hex');
         await pool.query('UPDATE users SET token = $1 WHERE username = $2', [token, username]);
-        res.json({ token, username, isAdmin: result.rows[0].is_admin });
+        res.json({ token, username, isAdmin: user.is_admin });
     } catch (err) {
         res.status(500).json({ error: '伺服器錯誤' });
     }

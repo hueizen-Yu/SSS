@@ -721,6 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (res.ok) {
             const data = await res.json();
+            document.getElementById('resend-verify-btn').style.display = 'none';
             sessionStorage.setItem('token', data.token);
             sessionStorage.setItem('username', data.username);
             // Await profile to get the definitive is_admin from DB
@@ -740,7 +741,14 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             fetchSettings();
         } else {
-            alert('登入失敗，請確認帳號與密碼');
+            const data = await res.json();
+            if (data.code === 'UNVERIFIED') {
+                alert(data.error);
+                document.getElementById('resend-verify-btn').style.display = 'inline-block';
+                sessionStorage.setItem('temp_unverified_username', username);
+            } else {
+                alert(data.error || '登入失敗，請確認帳號與密碼');
+            }
         }
     });
 
@@ -763,8 +771,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (res.ok) {
-            alert('註冊成功！請登入');
-            showPage(loginPage);
+            const data = await res.json();
+            alert(data.message || '註冊成功！請前往信箱收取驗證碼');
+            sessionStorage.setItem('temp_unverified_username', username);
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('verify-code-section').style.display = 'block';
+            document.getElementById('register-footer-links').style.display = 'none';
         } else {
             const data = await res.json();
             if (data.code === 'DUPLICATE_USERNAME') {
@@ -791,6 +803,97 @@ document.addEventListener('DOMContentLoaded', () => {
     viewRecordsBtn.addEventListener('click', () => { showPage(listPage); fetchRecords(); });
     backBtn.addEventListener('click', () => showPage(formPage));
     backToFormBtn.addEventListener('click', () => showPage(formPage));
+
+    const resendVerifyBtn = document.getElementById('resend-verify-btn');
+    if (resendVerifyBtn) {
+        resendVerifyBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const username = sessionStorage.getItem('temp_unverified_username');
+            if (!username) {
+                alert('無法取得帳號名稱，請重新輸入帳號並嘗試登入');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    document.getElementById('resend-verify-btn').style.display = 'none';
+                } else {
+                    alert('重發失敗：' + (data.error || '未知錯誤'));
+                }
+            } catch (err) {
+                alert('無法連接伺服器');
+            }
+        });
+    }
+
+    const verifyCodeBtn = document.getElementById('verify-code-btn');
+    if (verifyCodeBtn) {
+        verifyCodeBtn.addEventListener('click', async () => {
+            const code = document.getElementById('verify-code-input').value.trim();
+            const username = sessionStorage.getItem('temp_unverified_username');
+            if (!code || code.length !== 6) {
+                alert('請輸入 6 位數驗證碼');
+                return;
+            }
+            if (!username) {
+                alert('無法取得帳號資訊，請重新登入或註冊');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, code })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('驗證成功！請登入。');
+                    document.getElementById('register-form').reset();
+                    document.getElementById('register-form').style.display = 'block';
+                    document.getElementById('verify-code-section').style.display = 'none';
+                    document.getElementById('register-footer-links').style.display = 'block';
+                    document.getElementById('verify-code-input').value = '';
+                    showPage(loginPage);
+                } else {
+                    alert(data.error || '驗證失敗');
+                }
+            } catch (err) {
+                alert('無法連接伺服器');
+            }
+        });
+    }
+
+    const resendVerifyCodeBtn = document.getElementById('resend-verify-code-btn');
+    if (resendVerifyCodeBtn) {
+        resendVerifyCodeBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const username = sessionStorage.getItem('temp_unverified_username');
+            if (!username) return alert('無法取得帳號資訊');
+            try {
+                const res = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('驗證碼已重新發送！');
+                } else {
+                    alert('重發失敗：' + (data.error || '未知錯誤'));
+                }
+            } catch (err) {
+                alert('無法連接伺服器');
+            }
+        });
+    }
 
     // Auto-login check
     if (sessionStorage.getItem('token')) {
