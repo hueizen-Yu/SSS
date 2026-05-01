@@ -220,10 +220,17 @@ app.post('/api/register', async (req, res) => {
 
     try {
         // Check for duplicate username first
-        const existing = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
-        if (existing.rows.length > 0) {
+        const existingUser = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+        if (existingUser.rows.length > 0) {
             return res.status(400).json({ error: '帳號名稱已被使用', code: 'DUPLICATE_USERNAME' });
         }
+
+        // Check for duplicate email
+        const existingEmail = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+        if (existingEmail.rows.length > 0) {
+            return res.status(400).json({ error: 'Email 已經被使用', code: 'DUPLICATE_EMAIL' });
+        }
+
 
         const vToken = Math.floor(100000 + Math.random() * 900000).toString();
         const sql = `INSERT INTO users (username, password, gender, last_name, first_name, phone, email, city, address, is_verified, verification_token)
@@ -635,8 +642,9 @@ app.get('/api/users', verifyToken, async (req, res) => {
         if (!userRes.rows[0]?.is_admin) return res.status(403).json({ error: '權限不足' });
 
         const result = await pool.query(
-            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin, created_at FROM users ORDER BY is_admin DESC, created_at DESC'
+            'SELECT username, last_name, first_name, gender, phone, email, city, address, is_admin, is_verified, created_at FROM users ORDER BY is_admin DESC, created_at DESC'
         );
+
         res.json(result.rows);
     } catch (err) {
         console.error('Get Users Error:', err);

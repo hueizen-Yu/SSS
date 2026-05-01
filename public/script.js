@@ -647,9 +647,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (check.checked) {
                 const pid = check.getAttribute('data-pid');
                 const qty = parseInt(check.closest('div').querySelector('.edit-prod-qty').value) || 0;
-                items.push({ product_id: pid, quantity: qty });
+                
+                // Find original price if it exists, otherwise use current product price
+                const rec = records.find(r => r.id == id);
+                const originalItem = (rec?.items_json || []).find(i => i.product_id === pid);
+                const currentProd = products.find(p => p.product_id === pid);
+                
+                const price = originalItem ? (originalItem.price_at_purchase || 0) : (currentProd ? currentProd.price : 0);
+                
+                items.push({ 
+                    product_id: pid, 
+                    quantity: qty,
+                    price_at_purchase: price
+                });
             }
         });
+
 
         try {
             const res = await fetch(`/api/records/${id}`, {
@@ -1034,10 +1047,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td data-label="縣市">${u.city || '-'}</td>
                     <td data-label="地址">${u.address || '-'}</td>
                     <td data-label="身份">
-                        <button class="btn-small toggle-admin-btn" data-username="${u.username}" ${u.username === 'Stanley' ? 'disabled style="background: #6b7280; font-size: 12px; padding: 4px 10px; cursor: not-allowed; opacity: 0.5;"' : `style="background: ${u.is_admin ? '#f59e0b' : '#6b7280'}; font-size: 12px; padding: 4px 10px;"`}>
-                            ${u.is_admin ? '🔑 管理者' : '👤 一般'}
-                        </button>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <button class="btn-small toggle-admin-btn" data-username="${u.username}" ${u.username === 'Stanley' ? 'disabled style="background: #6b7280; font-size: 12px; padding: 4px 10px; cursor: not-allowed; opacity: 0.5;"' : `style="background: ${u.is_admin ? '#f59e0b' : '#6b7280'}; font-size: 12px; padding: 4px 10px;"`}>
+                                ${u.is_admin ? '🔑 管理者' : '👤 一般'}
+                            </button>
+                            ${!u.is_verified ? '<span style="color: #ef4444; font-size: 11px; font-weight: bold; text-align: center;">⚠️ 未驗證</span>' : ''}
+                        </div>
                     </td>
+
                     <td data-label="操作">
                         <button class="btn-small delete-user-btn" data-username="${u.username}" ${u.username === 'Stanley' ? 'disabled style="background: #ef4444; font-size: 12px; padding: 4px 10px; cursor: not-allowed; opacity: 0.5;"' : 'style="background: #ef4444; font-size: 12px; padding: 4px 10px;"'}>刪除</button>
                     </td>
