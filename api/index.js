@@ -74,12 +74,15 @@ const pool = new Pool({
 
 // NodeMailer Transporter
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
     }
 });
+
 // Database pool error handling
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
@@ -234,15 +237,15 @@ app.post('/api/register', async (req, res) => {
             text: `您好，${first_name} ${last_name}：\n\n感謝您註冊！您的驗證碼為：${vToken}\n請在註冊頁面輸入此 6 位數驗證碼以啟用您的帳號。\n\n如果您沒有註冊此帳號，請忽略此信件。`
         };
         
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Email send error:', error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
-        });
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log('Email sent: ' + info.response);
+            res.json({ message: '註冊成功，請前往信箱收取驗證信！' });
+        } catch (mailError) {
+            console.error('Email send error:', mailError);
+            res.status(500).json({ error: '帳號已註冊，但驗證信發送失敗。請嘗試登入後點擊「重寄驗證信」。' });
+        }
 
-        res.json({ message: '註冊成功，請前往信箱收取驗證信！' });
     } catch (err) {
         console.error('Register Error:', err);
         return res.status(500).json({ error: '伺服器錯誤，請稍後再試' });
@@ -288,15 +291,15 @@ app.post('/api/resend-verification', async (req, res) => {
             text: `您好，${user.first_name || ''} ${user.last_name || ''}：\n\n這是您要求的驗證碼。您的驗證碼為：${vToken}\n請在畫面上輸入此 6 位數驗證碼以啟用您的帳號。\n\n如果您沒有註冊此帳號，請忽略此信件。`
         };
         
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Email send error:', error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
-        });
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log('Email sent: ' + info.response);
+            res.json({ message: '驗證信已重新發送，請檢查您的信箱！' });
+        } catch (mailError) {
+            console.error('Email send error:', mailError);
+            res.status(500).json({ error: '驗證信發送失敗，請稍後再試。' });
+        }
 
-        res.json({ message: '驗證信已重新發送，請檢查您的信箱！' });
     } catch (err) {
         console.error('Resend Verify Error:', err);
         res.status(500).json({ error: '伺服器錯誤' });
