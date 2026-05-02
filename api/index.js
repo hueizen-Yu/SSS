@@ -195,6 +195,10 @@ async function initDB() {
         // Mark existing users as verified
         await client.query(`UPDATE users SET is_verified = TRUE WHERE verification_token IS NULL;`);
 
+        // Migration: Google OAuth
+        await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;`);
+        await client.query(`ALTER TABLE users ALTER COLUMN password DROP NOT NULL;`);
+
         // Seed the admin user
         await client.query(`
             INSERT INTO users (username, password, gender, is_admin)
@@ -211,6 +215,80 @@ async function initDB() {
 }
 
 initDB();
+
+// Google OAuth 2.0
+app.get('/api/auth/google', (req, res) => {
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) return res.status(500).json({ error: 'Server missing GOOGLE_CLIENT_ID' });
+    
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=profile email`;
+    res.redirect(url);
+});
+
+app.get('/api/auth/google/callback', async (req, res) => {
+    const { code } = req.query;
+    if (!code) return res.status(400).send('Missing code');
+    
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    
+    try {
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri
+            })
+        });
+        const tokenData = await tokenRes.json();
+        if (!tokenRes.ok) throw new Error('Token exchange failed: ' + JSON.stringify(tokenData));
+        
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
+        const profile = await userRes.json();
+        if (!userRes.ok) throw new Error('Failed to get profile');
+        
+        let userResult = await pool.query('SELECT * FROM users WHERE google_id = $1 OR email = $2', [profile.id, profile.email]);
+        let user;
+        
+        if (userResult.rows.length > 0) {
+            user = userResult.rows[0];
+            if (!user.google_id) {
+                await pool.query('UPDATE users SET google_id = $1, is_verified = TRUE WHERE id = $2', [profile.id, user.id]);
+            }
+        } else {
+            const baseUsername = profile.email.split('@')[0];
+            let username = baseUsername;
+            let counter = 1;
+            while ((await pool.query('SELECT id FROM users WHERE username = $1', [username])).rows.length > 0) {
+                username = `${baseUsername}${counter}`;
+                counter++;
+            }
+            const insertRes = await pool.query(`
+                INSERT INTO users (username, gender, last_name, first_name, email, is_verified, google_id)
+                VALUES ($1, '其他', $2, $3, $4, TRUE, $5)
+                RETURNING *
+            `, [username, profile.family_name || '', profile.given_name || profile.name || '', profile.email, profile.id]);
+            user = insertRes.rows[0];
+        }
+        
+        const appToken = Buffer.from(Date.now().toString() + Math.random().toString()).toString('base64');
+        await pool.query('UPDATE users SET token = $1 WHERE id = $2', [appToken, user.id]);
+        
+        res.redirect(`/?oauth_token=${encodeURIComponent(appToken)}&username=${encodeURIComponent(user.username)}`);
+        
+    } catch (err) {
+        console.error('Google OAuth Error:', err);
+        res.status(500).send('Google Login Failed');
+    }
+});
 
 app.post('/api/register', async (req, res) => {
     const { username, password, gender, last_name, first_name, phone, email, city, address } = req.body;

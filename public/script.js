@@ -55,6 +55,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToManageBtn = document.getElementById('back-to-manage-btn');
     const exportUsersExcelBtn = document.getElementById('export-users-excel-btn');
 
+    // Detect In-App Browsers for Google Login
+    const googleLoginBtns = document.querySelectorAll('a[href="/api/auth/google"]');
+    googleLoginBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            // Check for FB, IG, LINE, Messenger
+            const isInApp = (ua.indexOf('FBAN') > -1) || (ua.indexOf('FBAV') > -1) || (ua.indexOf('Instagram') > -1) || (ua.indexOf('Line') > -1);
+            if (isInApp) {
+                e.preventDefault();
+                alert('⚠️ 系統偵測到您正在使用 APP 內建瀏覽器。\n\n由於 Google 安全政策限制，無法在此環境登入 (錯誤 403)。\n\n👉 請點擊畫面右上角或右下角的「選單」按鈕，選擇「以預設瀏覽器開啟」或「在 Safari / Chrome 開啟」，即可正常登入！');
+                
+                // For LINE, try forcing external browser param
+                if (ua.indexOf('Line') > -1 && window.location.search.indexOf('openExternalBrowser=1') === -1) {
+                    window.location.href = window.location.href + (window.location.href.indexOf('?') > -1 ? '&' : '?') + 'openExternalBrowser=1';
+                }
+            }
+        });
+    });
+
     // State
     let products = [];
     let records = []; // Global records storage
@@ -209,26 +228,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = `product-item ${isChecked ? 'selected' : ''}`;
             card.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''}>
-                        <span class="product-id">${prod.product_id}</span>
-                        <span class="product-name view-detail-text" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;" onmouseover="this.style.color='var(--secondary)'" onmouseout="this.style.color='inherit'">${prod.name}</span>
-                    </div>
-                    <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
-                </div>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 4px 28px; line-height: 1.4;">${prod.short_desc || ''}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 28px; margin-top: 6px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 12px; color: var(--text-muted);">數量:</span>
-                        <div style="display: flex; align-items: center; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.35); border-radius: 10px; overflow: hidden;">
-                            <button type="button" class="qty-btn qty-minus" style="width: 30px; height: 30px; background: transparent; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='transparent'">−</button>
-                            <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="width: 40px; text-align: center; background: transparent; border: none; color: #fff; font-size: 15px; font-weight: 700; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
-                            <button type="button" class="qty-btn qty-plus" style="width: 30px; height: 30px; background: transparent; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='transparent'">+</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px;">
+                        <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;">
+                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="product-name view-detail-text" style="font-size: 1.05rem; font-weight: 600; cursor: pointer; color: #fff;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#fff'">${prod.name}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${prod.short_desc || ''}</span>
                         </div>
-                        ${limitHint}
                     </div>
-                    <span style="color: var(--primary); font-weight: 600; font-size: 14px;">$${Number(prod.price || 0).toLocaleString()}</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;">
+                                <button type="button" class="qty-btn qty-minus" style="width: 26px; height: 28px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
+                                <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="width: 36px; text-align: center; background: transparent; border: none; color: #fff; font-size: 0.9rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                                <button type="button" class="qty-btn qty-plus" style="width: 26px; height: 28px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
+                            </div>
+                            ${limitHint}
+                        </div>
+                        <span style="color: var(--primary); font-weight: 700; font-size: 1.1rem; min-width: 60px; text-align: right;">$${Number(prod.price || 0).toLocaleString()}</span>
+                    </div>
                 </div>
             `;
 
@@ -823,6 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('register-form').style.display = 'none';
             document.getElementById('verify-code-section').style.display = 'block';
             document.getElementById('register-footer-links').style.display = 'none';
+            document.getElementById('verify-footer-links').style.display = 'block';
         } else {
             const data = await res.json();
             if (data.code === 'DUPLICATE_USERNAME') {
@@ -968,6 +988,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('無法連接伺服器');
             }
         });
+    }
+
+    // OAuth Login Check
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthToken = urlParams.get('oauth_token');
+    const oauthUsername = urlParams.get('username');
+    if (oauthToken && oauthUsername) {
+        sessionStorage.setItem('token', oauthToken);
+        sessionStorage.setItem('username', oauthUsername);
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     // Auto-login check
