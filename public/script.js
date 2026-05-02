@@ -604,6 +604,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Populate edit items
         editItemsContainer.innerHTML = '';
+        const lockItems = ['已確認', '待出貨', '已出貨'].includes(rec.status);
+        if (lockItems) {
+            const hint = document.createElement('div');
+            hint.style = "color: #f59e0b; font-size: 13px; margin-bottom: 10px; text-align: center; font-weight: bold;";
+            hint.textContent = "⚠️ 訂單狀態為「" + rec.status + "」，無法再修改訂購品項與數量。";
+            editItemsContainer.appendChild(hint);
+        }
+
         products.forEach(prod => {
             const itemInRec = (rec.items_json || []).find(i => i.product_id === prod.product_id);
             const isChecked = !!itemInRec;
@@ -611,17 +619,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const div = document.createElement('div');
             div.style = "display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;";
+            const disabledAttr = lockItems ? 'disabled' : '';
             const maxQty = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : null;
             const maxAttrEdit = maxQty ? `max="${maxQty}"` : '';
             const limitHintEdit = maxQty ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 2px;">(訂購上限 ${maxQty})</span>` : '';
             div.innerHTML = `
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" class="edit-prod-check" data-pid="${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: ${lockItems ? 'not-allowed' : 'pointer'};">
+                    <input type="checkbox" class="edit-prod-check" data-pid="${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px;" ${disabledAttr}>
                     <span>${prod.product_id} - ${prod.name}</span>
                 </label>
-                <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="display: flex; align-items: center; gap: 5px; ${lockItems ? 'opacity: 0.7;' : ''}">
                     <span>數量:</span>
-                    <input type="number" class="edit-prod-qty" value="${qty}" min="0" ${maxAttrEdit} style="width: 60px; padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                    <input type="number" class="edit-prod-qty" value="${qty}" min="0" ${maxAttrEdit} style="width: 60px; padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')" ${disabledAttr}>
                     ${limitHintEdit}
                 </div>
             `;
@@ -846,6 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
+    document.getElementById('verify-back-to-login')?.addEventListener('click', (e) => { e.preventDefault(); showPage(loginPage); });
     
     document.getElementById('go-to-verify-btn')?.addEventListener('click', (e) => {
         e.preventDefault();
