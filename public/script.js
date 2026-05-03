@@ -496,6 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         manageProductsBody.innerHTML = '';
         products.forEach(prod => {
             const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td style="color: ${prod.id_color || 'inherit'};">${prod.product_id}</td>
                 <td style="color: ${prod.name_color || 'inherit'}; font-weight: 600;">${prod.name}</td>
                 <td style="color: ${prod.short_desc_color || 'inherit'}; font-size: 0.85rem;">${prod.short_desc || ''}</td>
