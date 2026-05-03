@@ -160,6 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.documentElement.style.setProperty('--table-td-color', settings.table_td_color);
                 document.getElementById('set-table-td-color').value = settings.table_td_color;
             }
+            if (settings.btn_text_color) {
+                document.documentElement.style.setProperty('--btn-text-color', settings.btn_text_color);
+                document.getElementById('set-btn-text-color').value = settings.btn_text_color;
+            }
+            if (settings.btn_hover_text_color) {
+                document.documentElement.style.setProperty('--btn-hover-text-color', settings.btn_hover_text_color);
+                document.getElementById('set-btn-hover-text-color').value = settings.btn_hover_text_color;
+            }
             if (settings.form_title_size) {
                 document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
                 document.getElementById('set-form-title-size').value = settings.form_title_size;
@@ -208,6 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const sizeMobile = document.getElementById('set-form-title-size-mobile').value;
         const bold = document.getElementById('set-form-title-bold').checked ? 'true' : 'false';
         const italic = document.getElementById('set-form-title-italic').checked ? 'true' : 'false';
+        const btnTextColor = document.getElementById('set-btn-text-color').value;
+        const btnHoverColor = document.getElementById('set-btn-hover-text-color').value;
         console.log('Attempting to save new title:', newTitle);
         try {
             await Promise.all([
@@ -221,7 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size', value: sizeDesktop }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size_mobile', value: sizeMobile }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_bold', value: bold }) }),
-                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_italic', value: italic }) })
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_italic', value: italic }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_text_color', value: btnTextColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_hover_text_color', value: btnHoverColor }) })
             ]);
             alert('設定已儲存！');
             fetchSettings();

@@ -210,7 +210,7 @@ input:focus, select:focus, textarea:focus {
     background: transparent;
     border: 2px solid var(--primary);
     border-radius: 8px;
-    color: var(--primary);
+    color: var(--btn-text-color, var(--primary));
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -224,7 +224,7 @@ input:focus, select:focus, textarea:focus {
 
 .btn-primary:hover:not(:disabled) {
     background: var(--primary);
-    color: #000;
+    color: var(--btn-hover-text-color, #000);
     box-shadow: var(--glow-shadow);
 }
 
