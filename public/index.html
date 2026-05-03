@@ -246,14 +246,22 @@
             <div style="margin-top: 40px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
                 <h2>網站全局設定</h2>
                 <div class="input-group" style="margin-top: 15px;">
-                    <label for="set-form-title">首頁標題名稱</label>
+                    <label for="set-form-title">首頁標題名稱 (按 Enter 可換行)</label>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <input type="text" id="set-form-title" placeholder="修改首頁大標題">
+                        <textarea id="set-form-title" placeholder="修改首頁大標題" style="width: 100%; padding: 12px; border-radius: 12px; min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
                         
                         <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">顏色</label>
-                                <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 50px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                                <label style="margin:0; font-size: 0.9rem;">標題色</label>
+                                <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">網站底色</label>
+                                <input type="color" id="set-site-bg-color" value="#090a0f" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">字卡色</label>
+                                <input type="color" id="set-card-bg-color" value="#141419" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">大小(電腦)</label>

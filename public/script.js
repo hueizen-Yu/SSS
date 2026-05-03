@@ -81,6 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 1;
     const itemsPerPage = 5;
 
+    // Helper: Hex to RGBA
+    function hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
     // Helper: Show Page
     function showPage(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -110,24 +118,32 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/settings');
             const settings = await res.json();
-            if (settings.form_title) {
-                const cleanTitle = settings.form_title.replace(/\|/g, '');
-                const htmlTitle  = settings.form_title.replace(/\|/g, '<br>');
-                
-                formTitleH1.innerHTML = htmlTitle;
-                setFormTitleInput.value = settings.form_title;
-                document.title = cleanTitle;
-                
-                // Update Login & Register page titles
-                const loginTitle = document.getElementById('login-title');
-                const registerTitle = document.getElementById('register-title');
-                if (loginTitle) loginTitle.innerHTML = htmlTitle;
-                if (registerTitle) registerTitle.innerHTML = htmlTitle;
-
+                if (settings.form_title) {
+                    const cleanTitle = settings.form_title.replace(/[|\n]/g, '');
+                    const htmlTitle  = settings.form_title.replace(/[|\n]/g, '<br>');
+                    
+                    formTitleH1.innerHTML = htmlTitle;
+                    setFormTitleInput.value = settings.form_title;
+                    document.title = cleanTitle;
+                    
+                    const loginTitle = document.getElementById('login-title');
+                    const registerTitle = document.getElementById('register-title');
+                    if (loginTitle) loginTitle.innerHTML = htmlTitle;
+                    if (registerTitle) registerTitle.innerHTML = htmlTitle;
+                }
                 if (settings.form_title_color) {
                     formTitleH1.style.color = settings.form_title_color;
-                    formTitleH1.style.textShadow = `0 0 10px ${settings.form_title_color}66`; // 40% opacity hex
+                    formTitleH1.style.textShadow = `0 0 10px ${settings.form_title_color}66`;
                     document.getElementById('set-form-title-color').value = settings.form_title_color;
+                }
+                if (settings.site_bg_color) {
+                    document.documentElement.style.setProperty('--bg-dark', settings.site_bg_color);
+                    document.getElementById('set-site-bg-color').value = settings.site_bg_color;
+                }
+                if (settings.card_bg_color) {
+                    const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
+                    document.documentElement.style.setProperty('--glass-bg', rgbaValue);
+                    document.getElementById('set-card-bg-color').value = settings.card_bg_color;
                 }
                 if (settings.form_title_size) {
                     document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
@@ -169,6 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettingsBtn.addEventListener('click', async () => {
         const newTitle = setFormTitleInput.value;
         const color = document.getElementById('set-form-title-color').value;
+        const siteBg = document.getElementById('set-site-bg-color').value;
+        const cardBg = document.getElementById('set-card-bg-color').value;
         const sizeDesktop = document.getElementById('set-form-title-size').value;
         const sizeMobile = document.getElementById('set-form-title-size-mobile').value;
         const bold = document.getElementById('set-form-title-bold').checked ? 'true' : 'false';
@@ -178,6 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await Promise.all([
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title', value: newTitle }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_color', value: color }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'site_bg_color', value: siteBg }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'card_bg_color', value: cardBg }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size', value: sizeDesktop }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size_mobile', value: sizeMobile }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_bold', value: bold }) }),
