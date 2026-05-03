@@ -160,6 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.documentElement.style.setProperty('--table-td-color', settings.table_td_color);
                 document.getElementById('set-table-td-color').value = settings.table_td_color;
             }
+            if (settings.text_general_color) {
+                document.documentElement.style.setProperty('--text-general', settings.text_general_color);
+                document.getElementById('set-text-general-color').value = settings.text_general_color;
+            }
             if (settings.btn_text_color) {
                 document.documentElement.style.setProperty('--btn-text-color', settings.btn_text_color);
                 document.getElementById('set-btn-text-color').value = settings.btn_text_color;
@@ -218,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const italic = document.getElementById('set-form-title-italic').checked ? 'true' : 'false';
         const btnTextColor = document.getElementById('set-btn-text-color').value;
         const btnHoverColor = document.getElementById('set-btn-hover-text-color').value;
+        const textGeneralColor = document.getElementById('set-text-general-color').value;
         console.log('Attempting to save new title:', newTitle);
         try {
             await Promise.all([
@@ -233,7 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_bold', value: bold }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_italic', value: italic }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_text_color', value: btnTextColor }) }),
-                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_hover_text_color', value: btnHoverColor }) })
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_hover_text_color', value: btnHoverColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'text_general_color', value: textGeneralColor }) })
             ]);
             alert('設定已儲存！');
             fetchSettings();
@@ -309,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isChecked = !!selectedItems[prod.product_id];
             const qty = selectedItems[prod.product_id] || 1;
             const maxQtyNum = prod.max_qty && prod.max_qty > 0 ? prod.max_qty : null;
-            const limitHint = maxQtyNum ? `<span style="font-size: 11px; color: #f59e0b; margin-left: 6px;">(訂購上限 ${maxQtyNum})</span>` : '';
+            const limitHint = maxQtyNum ? `<div style="font-size: 11px; color: #f59e0b; margin-top: 4px; text-align: center; width: 100%;">訂購上限 ${maxQtyNum}</div>` : '';
 
             const card = document.createElement('div');
             card.className = `product-item ${isChecked ? 'selected' : ''}`;
@@ -323,16 +329,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span style="font-size: 0.9rem; color: ${prod.short_desc_color || 'var(--text-muted)'}; display: block; margin-top: 4px; max-width: 300px; white-space: normal;">${prod.short_desc || ''}</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 15px; width: 100%; max-width: 260px; justify-content: flex-end;">
-                        <div style="display: flex; align-items: center; gap: 6px; width: 130px;">
-                            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden; width: 100%;">
-                                <button type="button" class="qty-btn qty-minus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
-                                <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="flex: 1; min-width: 30px; text-align: center; background: transparent; border: none; color: #fff; font-size: 1rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
-                                <button type="button" class="qty-btn qty-plus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px; width: 100%; max-width: 260px;">
+                        <div style="display: flex; align-items: center; gap: 15px; justify-content: flex-end; width: 100%;">
+                            <div style="display: flex; align-items: center; gap: 6px; width: 130px;">
+                                <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden; width: 100%;">
+                                    <button type="button" class="qty-btn qty-minus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
+                                    <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="flex: 1; min-width: 30px; text-align: center; background: transparent; border: none; color: #fff; font-size: 1rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                                    <button type="button" class="qty-btn qty-plus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
+                                </div>
                             </div>
-                            ${limitHint}
+                            <span style="color: ${prod.price_color || 'var(--primary)'}; font-weight: 700; font-size: 1.3rem; width: 100px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3); flex-shrink: 0;">$${Number(prod.price || 0).toLocaleString()}</span>
                         </div>
-                        <span style="color: ${prod.price_color || 'var(--primary)'}; font-weight: 700; font-size: 1.3rem; width: 100px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3); flex-shrink: 0;">$${Number(prod.price || 0).toLocaleString()}</span>
+                        ${limitHint}
                     </div>
                 </div>
             `;

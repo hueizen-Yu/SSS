@@ -246,35 +246,51 @@
             <div style="margin-top: 40px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
                 <h2>網站全局設定</h2>
                 <div class="input-group" style="margin-top: 15px;">
-                    <label for="set-form-title">首頁標題名稱 (按 Enter 可換行)</label>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <textarea id="set-form-title" placeholder="修改首頁大標題" style="width: 100%; padding: 12px; border-radius: 12px; min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
-                        
-                        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                        <!-- 顏色設定移至標題輸入框上方 -->
+                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">標題色</label>
-                                <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">說明色</label>
-                                <input type="color" id="set-subtitle-color" value="#cbd5e1" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">表頭色</label>
-                                <input type="color" id="set-table-th-color" value="#94a3b8" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">內容色</label>
-                                <input type="color" id="set-table-td-color" value="#ffffff" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 40px; height: 36px; border: none; cursor: pointer;">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">網站底色</label>
-                                <input type="color" id="set-site-bg-color" value="#090a0f" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-site-bg-color" value="#090a0f" style="width: 40px; height: 36px; border: none; cursor: pointer;">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">字卡色</label>
-                                <input type="color" id="set-card-bg-color" value="#141419" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-card-bg-color" value="#141419" style="width: 40px; height: 36px; border: none; cursor: pointer;">
                             </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">按鈕字色</label>
+                                <input type="color" id="set-btn-text-color" value="#00f0ff" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">點選後字色</label>
+                                <input type="color" id="set-btn-hover-text-color" value="#000000" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">說明色</label>
+                                <input type="color" id="set-subtitle-color" value="#cbd5e1" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">表頭色</label>
+                                <input type="color" id="set-table-th-color" value="#94a3b8" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">內容色</label>
+                                <input type="color" id="set-table-td-color" value="#ffffff" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">全域字色</label>
+                                <input type="color" id="set-text-general-color" value="#f8fafc" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                        </div>
+
+                        <label for="set-form-title">首頁標題名稱 (按 Enter 可換行)</label>
+                        <textarea id="set-form-title" placeholder="修改首頁大標題" style="width: 100%; padding: 12px; border-radius: 12px; min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
+                        
+                        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">大小(電腦)</label>
                                 <select id="set-form-title-size" style="width: auto; padding: 6px 12px; height: 36px;">
@@ -298,15 +314,7 @@
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem; cursor: pointer;"><input type="checkbox" id="set-form-title-italic" style="width: 18px; height: 18px; margin: 0; accent-color: var(--primary);"> 斜體</label>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">按鈕字色</label>
-                                <input type="color" id="set-btn-text-color" value="#00f0ff" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">點選後字色</label>
-                                <input type="color" id="set-btn-hover-text-color" value="#000000" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
-                            </div>
-                            <button id="save-settings-btn" class="btn-small" style="width: 100px; height: 36px;">儲存</button>
+                            <button id="save-settings-btn" class="btn-small" style="width: 120px; height: 36px;">儲存設定</button>
                         </div>
                     </div>
                 </div>
@@ -582,7 +590,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260503_2114"></script>
+    <script src="script.js?v=20260503_2147"></script>
 
 </body>
 </html>
