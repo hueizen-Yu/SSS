@@ -641,6 +641,27 @@ app.get('/api/settings', async (req, res) => {
         const result = await pool.query('SELECT * FROM settings');
         const settings = {};
         result.rows.forEach(row => settings[row.key] = row.value);
+        
+        // 後端正規化：一律把顏色類設定工主轉為標準 Hex，避免前端 input[type=color] 無法顯示
+        const colorKeys = ['card_bg_color', 'site_bg_color', 'form_title_color', 'subtitle_color', 
+                           'table_th_color', 'table_td_color', 'btn_text_color', 'btn_hover_text_color', 'text_general_color'];
+        colorKeys.forEach(key => {
+            if (settings[key]) {
+                const val = settings[key].trim();
+                // 如果是 rgba/rgb，提取 RGB 轉為 Hex
+                const rgbaMatch = val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                if (rgbaMatch) {
+                    const r = parseInt(rgbaMatch[1]).toString(16).padStart(2, '0');
+                    const g = parseInt(rgbaMatch[2]).toString(16).padStart(2, '0');
+                    const b = parseInt(rgbaMatch[3]).toString(16).padStart(2, '0');
+                    settings[key] = `#${r}${g}${b}`;
+                } else if (val.startsWith('#') && val.length > 7) {
+                    // 如果是 8 碼 Hex (#RRGGBBAA)，截取前 7 碼
+                    settings[key] = val.substring(0, 7);
+                }
+            }
+        });
+        
         res.json(settings);
     } catch (err) {
         res.status(500).json({ error: err.message });

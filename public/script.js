@@ -173,11 +173,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('set-site-bg-color').value = ensureHex(settings.site_bg_color, '#090a0f');
             }
             if (settings.card_bg_color) {
-                const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
+                const cleanCardBg = ensureHex(settings.card_bg_color, '#141419');
+                const rgbaValue = hexToRgba(cleanCardBg, 0.75);
                 document.documentElement.style.setProperty('--glass-bg', rgbaValue);
                 const cardBgInput = document.getElementById('set-card-bg-color');
                 if (cardBgInput) {
-                    cardBgInput.value = ensureHex(settings.card_bg_color, '#141419');
+                    cardBgInput.value = cleanCardBg;
+                    // 強制觸發更新以確保瀏覽器染色
+                    cardBgInput.dispatchEvent(new Event('input'));
                 }
             }
             if (settings.subtitle_color) {
