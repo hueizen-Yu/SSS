@@ -117,6 +117,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (verifyFooter) verifyFooter.style.display = 'block';
     }
 
+    // 確保顏色值是標準 7 碼 Hex，解決選擇器不顯示縮圖的問題
+    function ensureHex(color, defaultColor = '#000000') {
+        if (!color || typeof color !== 'string') return defaultColor;
+        // 如果是 RGBA/RGB 格式，暫時轉為 Hex 或回傳預設值 (簡化處理)
+        if (color.includes('rgba') || color.includes('rgb')) {
+            const parts = color.match(/\d+/g);
+            if (parts && parts.length >= 3) {
+                const r = parseInt(parts[0]).toString(16).padStart(2, '0');
+                const g = parseInt(parts[1]).toString(16).padStart(2, '0');
+                const b = parseInt(parts[2]).toString(16).padStart(2, '0');
+                return `#${r}${g}${b}`;
+            }
+            return defaultColor;
+        }
+        // 如果漏了 #
+        if (color.match(/^[0-9a-fA-F]{3,6}$/)) {
+            color = '#' + color;
+        }
+        // 如果是 4 碼 (#RGB) 轉 7 碼
+        if (color.length === 4) {
+            return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
+        }
+        // 如果超過 7 碼 (帶 alpha 的 Hex)，截斷它
+        if (color.length > 7 && color.startsWith('#')) {
+            return color.substring(0, 7);
+        }
+        return color.startsWith('#') ? color : defaultColor;
+    }
+
     async function fetchSettings() {
         try {
             const res = await fetch('/api/settings');
@@ -137,44 +166,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (settings.form_title_color) {
                 formTitleH1.style.color = settings.form_title_color;
                 formTitleH1.style.textShadow = `0 0 10px ${settings.form_title_color}66`;
-                document.getElementById('set-form-title-color').value = settings.form_title_color;
+                document.getElementById('set-form-title-color').value = ensureHex(settings.form_title_color, '#00f0ff');
             }
             if (settings.site_bg_color) {
                 document.documentElement.style.setProperty('--bg-dark', settings.site_bg_color);
-                document.getElementById('set-site-bg-color').value = settings.site_bg_color;
+                document.getElementById('set-site-bg-color').value = ensureHex(settings.site_bg_color, '#090a0f');
             }
             if (settings.card_bg_color) {
                 const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
                 document.documentElement.style.setProperty('--glass-bg', rgbaValue);
                 const cardBgInput = document.getElementById('set-card-bg-color');
                 if (cardBgInput) {
-                    // 確保輸入值是標準 7 碼 Hex，否則縮圖不會顯示
-                    cardBgInput.value = settings.card_bg_color.startsWith('#') ? settings.card_bg_color : '#141419';
+                    cardBgInput.value = ensureHex(settings.card_bg_color, '#141419');
                 }
             }
             if (settings.subtitle_color) {
                 document.documentElement.style.setProperty('--subtitle-color', settings.subtitle_color);
-                document.getElementById('set-subtitle-color').value = settings.subtitle_color;
+                document.getElementById('set-subtitle-color').value = ensureHex(settings.subtitle_color, '#cbd5e1');
             }
             if (settings.table_th_color) {
                 document.documentElement.style.setProperty('--table-th-color', settings.table_th_color);
-                document.getElementById('set-table-th-color').value = settings.table_th_color;
+                document.getElementById('set-table-th-color').value = ensureHex(settings.table_th_color, '#94a3b8');
             }
             if (settings.table_td_color) {
                 document.documentElement.style.setProperty('--table-td-color', settings.table_td_color);
-                document.getElementById('set-table-td-color').value = settings.table_td_color;
+                document.getElementById('set-table-td-color').value = ensureHex(settings.table_td_color, '#ffffff');
             }
             if (settings.text_general_color) {
                 document.documentElement.style.setProperty('--text-general', settings.text_general_color);
-                document.getElementById('set-text-general-color').value = settings.text_general_color;
+                document.getElementById('set-text-general-color').value = ensureHex(settings.text_general_color, '#f8fafc');
             }
             if (settings.btn_text_color) {
                 document.documentElement.style.setProperty('--btn-text-color', settings.btn_text_color);
-                document.getElementById('set-btn-text-color').value = settings.btn_text_color;
+                document.getElementById('set-btn-text-color').value = ensureHex(settings.btn_text_color, '#00f0ff');
             }
             if (settings.btn_hover_text_color) {
                 document.documentElement.style.setProperty('--btn-hover-text-color', settings.btn_hover_text_color);
-                document.getElementById('set-btn-hover-text-color').value = settings.btn_hover_text_color;
+                document.getElementById('set-btn-hover-text-color').value = ensureHex(settings.btn_hover_text_color, '#000000');
             }
             if (settings.form_title_size) {
                 document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
