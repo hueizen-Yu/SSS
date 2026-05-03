@@ -146,7 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (settings.card_bg_color) {
                 const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
                 document.documentElement.style.setProperty('--glass-bg', rgbaValue);
-                document.getElementById('set-card-bg-color').value = settings.card_bg_color;
+                const cardBgInput = document.getElementById('set-card-bg-color');
+                if (cardBgInput) cardBgInput.value = settings.card_bg_color;
             }
             if (settings.subtitle_color) {
                 document.documentElement.style.setProperty('--subtitle-color', settings.subtitle_color);
@@ -245,6 +246,36 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchSettings();
         } catch (err) {
             alert('儲存設定失敗');
+        }
+    });
+
+    document.getElementById('save-colors-btn')?.addEventListener('click', async () => {
+        const color = document.getElementById('set-form-title-color').value;
+        const subtitleColor = document.getElementById('set-subtitle-color').value;
+        const thColor = document.getElementById('set-table-th-color').value;
+        const tdColor = document.getElementById('set-table-td-color').value;
+        const siteBg = document.getElementById('set-site-bg-color').value;
+        const cardBg = document.getElementById('set-card-bg-color').value;
+        const btnTextColor = document.getElementById('set-btn-text-color').value;
+        const btnHoverColor = document.getElementById('set-btn-hover-text-color').value;
+        const textGeneralColor = document.getElementById('set-text-general-color').value;
+
+        try {
+            await Promise.all([
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_color', value: color }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'subtitle_color', value: subtitleColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'table_th_color', value: thColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'table_td_color', value: tdColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'site_bg_color', value: siteBg }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'card_bg_color', value: cardBg }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_text_color', value: btnTextColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'btn_hover_text_color', value: btnHoverColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'text_general_color', value: textGeneralColor }) })
+            ]);
+            alert('視覺配色已儲存！');
+            fetchSettings();
+        } catch (err) {
+            alert('儲存失敗');
         }
     });
 

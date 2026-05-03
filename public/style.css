@@ -102,13 +102,14 @@ body {
 
 .product-item:hover {
     border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 10px var(--primary);
+    opacity: 0.8;
 }
 
 .product-item.selected {
     border-color: var(--primary);
-    background: rgba(0, 240, 255, 0.05);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 15px var(--primary);
 }
 
 .page {
@@ -169,7 +170,7 @@ h1 {
 }
 
 h2 {
-    color: var(--text-primary);
+    color: var(--text-general);
     margin-bottom: 15px;
 }
 
@@ -187,7 +188,7 @@ h2 {
 .input-group label {
     display: block;
     margin-bottom: 8px;
-    color: var(--text-primary);
+    color: var(--text-general);
     font-size: 0.9rem;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -199,7 +200,7 @@ input, select, textarea {
     background: rgba(0, 0, 0, 0.4) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 8px;
-    color: var(--text-primary) !important;
+    color: var(--text-general) !important;
     font-size: 1rem;
     outline: none;
     transition: all 0.3s;
@@ -252,7 +253,7 @@ input:focus, select:focus, textarea:focus {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    color: var(--text-primary);
+    color: var(--text-general);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -271,7 +272,7 @@ input:focus, select:focus, textarea:focus {
     cursor: pointer;
     background: transparent;
     border: 1px solid var(--text-muted);
-    color: var(--text-primary);
+    color: var(--text-general);
     transition: all 0.2s;
     font-weight: 600;
 }
@@ -302,7 +303,7 @@ th, td {
     padding: 14px 12px;
     text-align: left;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--table-td-color, var(--text-primary));
+    color: var(--table-td-color, var(--text-general));
 }
 
 th {
