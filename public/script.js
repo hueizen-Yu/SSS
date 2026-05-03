@@ -148,6 +148,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.documentElement.style.setProperty('--glass-bg', rgbaValue);
                 document.getElementById('set-card-bg-color').value = settings.card_bg_color;
             }
+            if (settings.subtitle_color) {
+                document.documentElement.style.setProperty('--subtitle-color', settings.subtitle_color);
+                document.getElementById('set-subtitle-color').value = settings.subtitle_color;
+            }
+            if (settings.table_th_color) {
+                document.documentElement.style.setProperty('--table-th-color', settings.table_th_color);
+                document.getElementById('set-table-th-color').value = settings.table_th_color;
+            }
+            if (settings.table_td_color) {
+                document.documentElement.style.setProperty('--table-td-color', settings.table_td_color);
+                document.getElementById('set-table-td-color').value = settings.table_td_color;
+            }
             if (settings.form_title_size) {
                 document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
                 document.getElementById('set-form-title-size').value = settings.form_title_size;
@@ -187,6 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettingsBtn.addEventListener('click', async () => {
         const newTitle = setFormTitleInput.value;
         const color = document.getElementById('set-form-title-color').value;
+        const subtitleColor = document.getElementById('set-subtitle-color').value;
+        const thColor = document.getElementById('set-table-th-color').value;
+        const tdColor = document.getElementById('set-table-td-color').value;
         const siteBg = document.getElementById('set-site-bg-color').value;
         const cardBg = document.getElementById('set-card-bg-color').value;
         const sizeDesktop = document.getElementById('set-form-title-size').value;
@@ -198,6 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
             await Promise.all([
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title', value: newTitle }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_color', value: color }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'subtitle_color', value: subtitleColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'table_th_color', value: thColor }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'table_td_color', value: tdColor }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'site_bg_color', value: siteBg }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'card_bg_color', value: cardBg }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size', value: sizeDesktop }) }),
@@ -289,8 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary);">
                         <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
                         <div style="display: flex; flex-direction: column; text-align: left;">
-                            <span class="product-name view-detail-text" style="font-size: 1.2rem; font-weight: 600; cursor: pointer; color: #fff;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#fff'">${prod.name}</span>
-                            <span style="font-size: 0.9rem; color: var(--text-muted); display: block; margin-top: 4px; max-width: 300px; white-space: normal;">${prod.short_desc || ''}</span>
+                            <span class="product-name view-detail-text" style="font-size: 1.2rem; font-weight: 600; cursor: pointer; color: ${prod.name_color || '#fff'};" data-id="${prod.id}" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='${prod.name_color || '#fff'}'">${prod.name}</span>
+                            <span style="font-size: 0.9rem; color: ${prod.short_desc_color || 'var(--text-muted)'}; display: block; margin-top: 4px; max-width: 300px; white-space: normal;">${prod.short_desc || ''}</span>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 15px; width: 100%; max-width: 260px; justify-content: flex-end;">
@@ -302,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             ${limitHint}
                         </div>
-                        <span style="color: var(--primary); font-weight: 700; font-size: 1.3rem; width: 100px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3); flex-shrink: 0;">$${Number(prod.price || 0).toLocaleString()}</span>
+                        <span style="color: ${prod.price_color || 'var(--primary)'}; font-weight: 700; font-size: 1.3rem; width: 100px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3); flex-shrink: 0;">$${Number(prod.price || 0).toLocaleString()}</span>
                     </div>
                 </div>
             `;
@@ -384,14 +402,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showProductDetail(prod) {
         document.getElementById('detail-id').textContent = prod.product_id;
+        document.getElementById('detail-id').style.color = prod.id_color || '#64748b';
         document.getElementById('detail-name').textContent = prod.name;
+        document.getElementById('detail-name').style.color = prod.name_color || '#fff';
         document.getElementById('detail-price').textContent = `$${Number(prod.price || 0).toLocaleString()}`;
+        document.getElementById('detail-price').style.color = prod.price_color || 'var(--primary)';
         const rawDesc = prod.long_desc || '暫無詳細描述。';
+        const detailDescEl = document.getElementById('detail-description');
+        detailDescEl.style.color = prod.long_desc_color || '#cbd5e1';
         // Render as Markdown if marked is available, else plain text
         if (typeof marked !== 'undefined') {
-            document.getElementById('detail-description').innerHTML = marked.parse(rawDesc);
+            detailDescEl.innerHTML = marked.parse(rawDesc);
         } else {
-            document.getElementById('detail-description').textContent = rawDesc;
+            detailDescEl.textContent = rawDesc;
         }
         document.getElementById('detail-image').src = prod.image_path || 'images/placeholder.png';
         showPage(detailPage);
@@ -453,6 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('prod-max-qty').value = prod ? (prod.max_qty || 0) : 0;
         document.getElementById('prod-short-desc').value = prod ? prod.short_desc : '';
         document.getElementById('prod-long-desc').value = prod ? prod.long_desc : '';
+        document.getElementById('prod-id-color').value = prod ? (prod.id_color || '#64748b') : '#64748b';
+        document.getElementById('prod-name-color').value = prod ? (prod.name_color || '#ffffff') : '#ffffff';
+        document.getElementById('prod-price-color').value = prod ? (prod.price_color || '#00f0ff') : '#00f0ff';
+        document.getElementById('prod-max-qty-color').value = prod ? (prod.max_qty_color || '#94a3b8') : '#94a3b8';
+        document.getElementById('prod-short-desc-color').value = prod ? (prod.short_desc_color || '#cbd5e1') : '#cbd5e1';
+        document.getElementById('prod-long-desc-color').value = prod ? (prod.long_desc_color || '#cbd5e1') : '#cbd5e1';
         document.getElementById('prod-image').value = '';
         productModal.classList.remove('hidden');
     }
@@ -463,8 +492,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const product_id = document.getElementById('prod-id').value;
         const name = document.getElementById('prod-name').value;
         const price = document.getElementById('prod-price').value;
+        const max_qty = document.getElementById('prod-max-qty').value;
         const short_desc = document.getElementById('prod-short-desc').value;
         const long_desc = document.getElementById('prod-long-desc').value;
+        const id_color = document.getElementById('prod-id-color').value;
+        const name_color = document.getElementById('prod-name-color').value;
+        const price_color = document.getElementById('prod-price-color').value;
+        const max_qty_color = document.getElementById('prod-max-qty-color').value;
+        const short_desc_color = document.getElementById('prod-short-desc-color').value;
+        const long_desc_color = document.getElementById('prod-long-desc-color').value;
         const imageFile = document.getElementById('prod-image').files[0];
         
         console.log('Sending Product Data:', { id, product_id, name, price, short_desc });
@@ -518,7 +554,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     long_desc,
                     price,
                     max_qty,
-                    image_path
+                    image_path,
+                    id_color: document.getElementById('prod-id-color').value,
+                    name_color: document.getElementById('prod-name-color').value,
+                    price_color: document.getElementById('prod-price-color').value,
+                    max_qty_color: document.getElementById('prod-max-qty-color').value,
+                    short_desc_color: document.getElementById('prod-short-desc-color').value,
+                    long_desc_color: document.getElementById('prod-long-desc-color').value
                 })
             });
 

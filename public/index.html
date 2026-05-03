@@ -256,6 +256,18 @@
                                 <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">說明色</label>
+                                <input type="color" id="set-subtitle-color" value="#cbd5e1" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">表頭色</label>
+                                <input type="color" id="set-table-th-color" value="#94a3b8" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">內容色</label>
+                                <input type="color" id="set-table-td-color" value="#ffffff" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">網站底色</label>
                                 <input type="color" id="set-site-bg-color" value="#090a0f" style="width: 45px; padding: 0; height: 36px; border: none; cursor: pointer;">
                             </div>
@@ -460,27 +472,63 @@
             <form id="product-form">
                 <input type="hidden" id="product-db-id">
                 <div class="input-group">
-                    <label for="prod-id">產品編號</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="prod-id">產品編號</label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">文字顏色</span>
+                            <input type="color" id="prod-id-color" value="#64748b" style="width: 30px; height: 20px; border: none; background: none; cursor: pointer; padding: 0;">
+                        </div>
+                    </div>
                     <input type="text" id="prod-id" required placeholder="例如: 004">
                 </div>
                 <div class="input-group">
-                    <label for="prod-name">產品名稱</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="prod-name">產品名稱</label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">文字顏色</span>
+                            <input type="color" id="prod-name-color" value="#ffffff" style="width: 30px; height: 20px; border: none; background: none; cursor: pointer; padding: 0;">
+                        </div>
+                    </div>
                     <input type="text" id="prod-name" required placeholder="產品名稱">
                 </div>
                 <div class="input-group">
-                    <label for="prod-price">產品售價 (NT$)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="prod-price">產品售價 (NT$)</label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">文字顏色</span>
+                            <input type="color" id="prod-price-color" value="#00f0ff" style="width: 30px; height: 20px; border: none; background: none; cursor: pointer; padding: 0;">
+                        </div>
+                    </div>
                     <input type="number" id="prod-price" required placeholder="例如: 1500" min="0">
                 </div>
                 <div class="input-group">
-                    <label for="prod-max-qty">數量上限（0 = 無限制）</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="prod-max-qty">數量上限（0 = 無限制）</label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">文字顏色</span>
+                            <input type="color" id="prod-max-qty-color" value="#94a3b8" style="width: 30px; height: 20px; border: none; background: none; cursor: pointer; padding: 0;">
+                        </div>
+                    </div>
                     <input type="number" id="prod-max-qty" placeholder="0" min="0">
                 </div>
                 <div class="input-group">
-                    <label for="prod-short-desc">卡片簡短描述</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="prod-short-desc">卡片簡短描述</label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">文字顏色</span>
+                            <input type="color" id="prod-short-desc-color" value="#cbd5e1" style="width: 30px; height: 20px; border: none; background: none; cursor: pointer; padding: 0;">
+                        </div>
+                    </div>
                     <textarea id="prod-short-desc" required style="width: 100%; padding: 12px; border-radius: 12px; min-height: 60px; font-family: inherit;"></textarea>
                 </div>
                 <div class="input-group">
-                    <label for="prod-long-desc">產品詳細介紹 <span style="font-size: 11px; color: #a5b4fc;">（支援 Markdown：**粗體** *斜體* - 清單 ## 標題 換行請按兩次 Enter）</span></label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="prod-long-desc">產品詳細介紹 <span style="font-size: 11px; color: #a5b4fc;">（支援 Markdown）</span></label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">文字顏色</span>
+                            <input type="color" id="prod-long-desc-color" value="#cbd5e1" style="width: 30px; height: 20px; border: none; background: none; cursor: pointer; padding: 0;">
+                        </div>
+                    </div>
                     <textarea id="prod-long-desc" required style="width: 100%; padding: 12px; border-radius: 12px; min-height: 120px; font-family: monospace;"></textarea>
                 </div>
                 <div class="input-group">

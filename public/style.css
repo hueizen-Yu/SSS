@@ -163,7 +163,7 @@ h2 {
 }
 
 .subtitle {
-    color: var(--text-muted);
+    color: var(--subtitle-color, var(--text-muted));
     margin-bottom: 30px;
     font-size: 1rem;
 }
@@ -291,14 +291,14 @@ th, td {
     padding: 14px 12px;
     text-align: left;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    color: var(--table-td-color, var(--text-primary));
 }
 
 th {
     background: rgba(0, 0, 0, 0.4);
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--primary);
+    color: var(--table-th-color, var(--primary));
     text-transform: uppercase;
     letter-spacing: 1px;
 }
