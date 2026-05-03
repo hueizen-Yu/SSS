@@ -82,10 +82,10 @@ body {
     max-width: 1000px;
 }
 
-/* Product Card Grid */
+/* Product Card Layout */
 #product-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
     text-align: left;

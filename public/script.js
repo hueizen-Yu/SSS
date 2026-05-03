@@ -123,6 +123,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const registerTitle = document.getElementById('register-title');
                 if (loginTitle) loginTitle.innerHTML = htmlTitle;
                 if (registerTitle) registerTitle.innerHTML = htmlTitle;
+
+                if (settings.form_title_color) {
+                    formTitleH1.style.color = settings.form_title_color;
+                    formTitleH1.style.textShadow = `0 0 10px ${settings.form_title_color}66`; // 40% opacity hex
+                    document.getElementById('set-form-title-color').value = settings.form_title_color;
+                }
+                if (settings.form_title_size) {
+                    formTitleH1.style.fontSize = settings.form_title_size;
+                    document.getElementById('set-form-title-size').value = settings.form_title_size;
+                }
+                if (settings.form_title_bold === 'true') {
+                    formTitleH1.style.fontWeight = 'bold';
+                    document.getElementById('set-form-title-bold').checked = true;
+                } else if (settings.form_title_bold === 'false') {
+                    formTitleH1.style.fontWeight = 'normal';
+                    document.getElementById('set-form-title-bold').checked = false;
+                }
+                if (settings.form_title_italic === 'true') {
+                    formTitleH1.style.fontStyle = 'italic';
+                    document.getElementById('set-form-title-italic').checked = true;
+                } else if (settings.form_title_italic === 'false') {
+                    formTitleH1.style.fontStyle = 'normal';
+                    document.getElementById('set-form-title-italic').checked = false;
+                }
             }
 
             const ogDescInput = document.getElementById('set-og-description');
@@ -140,17 +164,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveSettingsBtn.addEventListener('click', async () => {
         const newTitle = setFormTitleInput.value;
+        const color = document.getElementById('set-form-title-color').value;
+        const size = document.getElementById('set-form-title-size').value;
+        const bold = document.getElementById('set-form-title-bold').checked ? 'true' : 'false';
+        const italic = document.getElementById('set-form-title-italic').checked ? 'true' : 'false';
         console.log('Attempting to save new title:', newTitle);
         try {
-            const res = await fetch('/api/settings', {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({ key: 'form_title', value: newTitle })
-            });
-            if (res.ok) {
-                alert('設定已儲存！');
-                fetchSettings();
-            }
+            await Promise.all([
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title', value: newTitle }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_color', value: color }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size', value: size }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_bold', value: bold }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_italic', value: italic }) })
+            ]);
+            alert('設定已儲存！');
+            fetchSettings();
         } catch (err) {
             alert('儲存設定失敗');
         }
@@ -229,24 +257,25 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = `product-item ${isChecked ? 'selected' : ''}`;
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px;">
-                        <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;">
-                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
-                        <div style="display: flex; flex-direction: column;">
-                            <span class="product-name view-detail-text" style="font-size: 1.05rem; font-weight: 600; cursor: pointer; color: #fff;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#fff'">${prod.name}</span>
-                            <span style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${prod.short_desc || ''}</span>
+                    <div style="display: flex; align-items: center; gap: 15px; flex: 1; min-width: 200px;">
+                        <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary);">
+                        <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                        <div style="display: flex; flex-direction: column; text-align: left;">
+                            <span style="font-size: 0.8rem; color: var(--primary); font-weight: bold; letter-spacing: 1px;">#${prod.product_id}</span>
+                            <span class="product-name view-detail-text" style="font-size: 1.2rem; font-weight: 600; cursor: pointer; color: #fff;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#fff'">${prod.name}</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted); display: block; margin-top: 4px; max-width: 300px; white-space: normal;">${prod.short_desc || ''}</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 20px;">
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;">
-                                <button type="button" class="qty-btn qty-minus" style="width: 26px; height: 28px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
-                                <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="width: 36px; text-align: center; background: transparent; border: none; color: #fff; font-size: 0.9rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
-                                <button type="button" class="qty-btn qty-plus" style="width: 26px; height: 28px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
+                            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden;">
+                                <button type="button" class="qty-btn qty-minus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
+                                <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="width: 40px; text-align: center; background: transparent; border: none; color: #fff; font-size: 1rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                                <button type="button" class="qty-btn qty-plus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
                             </div>
                             ${limitHint}
                         </div>
-                        <span style="color: var(--primary); font-weight: 700; font-size: 1.1rem; min-width: 60px; text-align: right;">$${Number(prod.price || 0).toLocaleString()}</span>
+                        <span style="color: var(--primary); font-weight: 700; font-size: 1.3rem; min-width: 80px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3);">$${Number(prod.price || 0).toLocaleString()}</span>
                     </div>
                 </div>
             `;

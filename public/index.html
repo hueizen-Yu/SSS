@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260501_2217">
+    <link rel="stylesheet" href="style.css?v=20260503_1241">
 
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Login Page -->
-    <div id="login-page" class="page container">
+    <div id="login-page" class="page container large">
         <div class="glass-card">
             <h1 id="login-title">系統登入</h1>
 
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Register Page -->
-    <div id="register-page" class="page container">
+    <div id="register-page" class="page container large">
         <div class="glass-card">
             <h1 id="register-title">註冊帳號</h1>
 
@@ -217,7 +217,7 @@
     </div>
 
     <!-- Product Management Page -->
-    <div id="manage-page" class="page container">
+    <div id="manage-page" class="page container large">
         <div class="glass-card large">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1>品項管理系統</h1>
@@ -247,9 +247,31 @@
                 <h2>網站全局設定</h2>
                 <div class="input-group" style="margin-top: 15px;">
                     <label for="set-form-title">首頁標題名稱</label>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
                         <input type="text" id="set-form-title" placeholder="修改首頁大標題">
-                        <button id="save-settings-btn" class="btn-small" style="width: 100px;">儲存</button>
+                        
+                        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">顏色</label>
+                                <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 50px; padding: 0; height: 36px; border: none; cursor: pointer;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem;">大小</label>
+                                <select id="set-form-title-size" style="width: auto; padding: 6px 12px; height: 36px;">
+                                    <option value="1.5rem">小 (1.5rem)</option>
+                                    <option value="2.2rem" selected>中 (2.2rem)</option>
+                                    <option value="3rem">大 (3rem)</option>
+                                    <option value="4rem">特大 (4rem)</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem; cursor: pointer;"><input type="checkbox" id="set-form-title-bold" style="width: 18px; height: 18px; margin: 0; accent-color: var(--primary);"> 粗體</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="margin:0; font-size: 0.9rem; cursor: pointer;"><input type="checkbox" id="set-form-title-italic" style="width: 18px; height: 18px; margin: 0; accent-color: var(--primary);"> 斜體</label>
+                            </div>
+                            <button id="save-settings-btn" class="btn-small" style="width: 100px; height: 36px;">儲存</button>
+                        </div>
                     </div>
                 </div>
                 <div class="input-group" style="margin-top: 15px;">
@@ -264,7 +286,7 @@
     </div>
 
     <!-- Product Detail Page -->
-    <div id="detail-page" class="page container">
+    <div id="detail-page" class="page container large">
         <div class="glass-card">
             <button id="back-to-form-btn" class="btn-small mb-4" style="background: rgba(255,255,255,0.1); color: #fff; width: auto;">← 返回首頁</button>
             <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -287,7 +309,7 @@
     </div>
 
     <!-- Records List Page -->
-    <div id="list-page" class="page container">
+    <div id="list-page" class="page container large">
         <div class="glass-card large">
             <h1>購物清單</h1>
             <div style="display: flex; gap: 10px; margin-bottom: 24px;">
@@ -320,7 +342,7 @@
     </div>
 
     <!-- Users List Page -->
-    <div id="users-page" class="page container">
+    <div id="users-page" class="page container large">
         <div class="glass-card large">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1>使用者列表</h1>
@@ -488,7 +510,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260501_2217"></script>
+    <script src="script.js?v=20260503_1241"></script>
 
 </body>
 </html>
