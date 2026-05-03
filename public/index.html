@@ -259,7 +259,10 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">字卡色</label>
-                                <input type="color" id="set-card-bg-color" value="#141419" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <div style="position: relative; width: 40px; height: 36px;">
+                                    <input type="color" id="set-card-bg-color" value="#141419" style="width: 100%; height: 100%; border: none; cursor: pointer; padding: 0; opacity: 1;">
+                                </div>
+                                <span id="card-bg-hex-label" style="font-size: 11px; color: var(--text-muted); font-family: monospace;">#141419</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">按鈕字色</label>
@@ -594,7 +597,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260503_2230"></script>
+    <script src="script.js?v=20260503_2236"></script>
 
 </body>
 </html>

@@ -177,9 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rgbaValue = hexToRgba(cleanCardBg, 0.75);
                 document.documentElement.style.setProperty('--glass-bg', rgbaValue);
                 const cardBgInput = document.getElementById('set-card-bg-color');
+                const cardBgLabel = document.getElementById('card-bg-hex-label');
                 if (cardBgInput) {
-                    cardBgInput.value = cleanCardBg;
-                    // 強制觸發更新以確保瀏覽器染色
+                    cardBgInput.value = cleanCardBg.toLowerCase();
+                    if (cardBgLabel) cardBgLabel.textContent = cleanCardBg.toLowerCase();
                     cardBgInput.dispatchEvent(new Event('input'));
                 }
             }
@@ -241,6 +242,15 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Failed to fetch settings', err);
         }
+    }
+
+    // 即時同步字卡色 Hex 標籤
+    const cardBgInput = document.getElementById('set-card-bg-color');
+    const cardBgHexLabel = document.getElementById('card-bg-hex-label');
+    if (cardBgInput && cardBgHexLabel) {
+        cardBgInput.addEventListener('input', () => {
+            cardBgHexLabel.textContent = cardBgInput.value.toLowerCase();
+        });
     }
 
     saveSettingsBtn.addEventListener('click', async () => {
