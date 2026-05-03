@@ -147,7 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
                 document.documentElement.style.setProperty('--glass-bg', rgbaValue);
                 const cardBgInput = document.getElementById('set-card-bg-color');
-                if (cardBgInput) cardBgInput.value = settings.card_bg_color;
+                if (cardBgInput) {
+                    // 確保輸入值是標準 7 碼 Hex，否則縮圖不會顯示
+                    cardBgInput.value = settings.card_bg_color.startsWith('#') ? settings.card_bg_color : '#141419';
+                }
             }
             if (settings.subtitle_color) {
                 document.documentElement.style.setProperty('--subtitle-color', settings.subtitle_color);
@@ -493,10 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
         manageProductsBody.innerHTML = '';
         products.forEach(prod => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${prod.product_id}</td>
-                <td>${prod.name}</td>
-                <td>${prod.short_desc || ''}</td>
+                <td style="color: ${prod.id_color || 'inherit'};">${prod.product_id}</td>
+                <td style="color: ${prod.name_color || 'inherit'}; font-weight: 600;">${prod.name}</td>
+                <td style="color: ${prod.short_desc_color || 'inherit'}; font-size: 0.85rem;">${prod.short_desc || ''}</td>
                 <td>
                     <button class="btn-small prod-edit-btn" data-id="${prod.id}">編輯</button>
                     <button class="btn-small prod-delete-btn" data-id="${prod.id}" style="background: #ef4444;">刪除</button>
