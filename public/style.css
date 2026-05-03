@@ -206,6 +206,17 @@ input, select, textarea {
     transition: all 0.3s;
 }
 
+/* 顏色選擇器特別處理：需要軘許瀏覽器內建終色可選示縮圖正常顯示 */
+input[type=color] {
+    background: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 4px;
+    padding: 2px !important;
+    cursor: pointer;
+    width: 40px;
+    height: 36px;
+}
+
 input::placeholder, textarea::placeholder {
     color: var(--text-muted);
 }

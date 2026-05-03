@@ -250,45 +250,38 @@
                         <!-- 顏色設定移至標題輸入框上方 -->
                         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="margin:0; font-size: 0.9rem;">標題色</label>
-                                <input type="color" id="set-form-title-color" value="#00f0ff" style="width: 40px; height: 36px; border: none; cursor: pointer;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">網站底色</label>
-                                <input type="color" id="set-site-bg-color" value="#090a0f" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-site-bg-color" value="#090a0f">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">字卡色</label>
-                                <div style="position: relative; width: 40px; height: 36px;">
-                                    <input type="color" id="set-card-bg-color" value="#141419" style="width: 100%; height: 100%; border: none; cursor: pointer; padding: 0; opacity: 1;">
-                                </div>
-                                <span id="card-bg-hex-label" style="font-size: 11px; color: var(--text-muted); font-family: monospace;">#141419</span>
+                                <input type="color" id="set-card-bg-color" value="#141419">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">按鈕字色</label>
-                                <input type="color" id="set-btn-text-color" value="#00f0ff" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-btn-text-color" value="#00f0ff">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">點選後字色</label>
-                                <input type="color" id="set-btn-hover-text-color" value="#000000" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-btn-hover-text-color" value="#000000">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">說明色</label>
-                                <input type="color" id="set-subtitle-color" value="#cbd5e1" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-subtitle-color" value="#cbd5e1">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">表頭色</label>
-                                <input type="color" id="set-table-th-color" value="#94a3b8" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-table-th-color" value="#94a3b8">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">內容色</label>
-                                <input type="color" id="set-table-td-color" value="#ffffff" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-table-td-color" value="#ffffff">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="margin:0; font-size: 0.9rem;">全域字色</label>
-                                <input type="color" id="set-text-general-color" value="#f8fafc" style="width: 40px; height: 36px; border: none; cursor: pointer;">
+                                <input type="color" id="set-text-general-color" value="#f8fafc">
                             </div>
-                            <!-- 新增：專屬儲存按鈕 -->
+                            <!-- 儲存按鈕 -->
                             <div style="width: 100%; margin-top: 10px; display: flex; justify-content: flex-end;">
                                 <button id="save-colors-btn" class="btn-small" style="width: 120px; height: 36px; background: var(--secondary);">儲存視覺配色</button>
                             </div>
@@ -296,6 +289,10 @@
 
                         <label for="set-form-title">首頁標題名稱 (按 Enter 可換行)</label>
                         <textarea id="set-form-title" placeholder="修改首頁大標題" style="width: 100%; padding: 12px; border-radius: 12px; min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; margin-bottom: 16px;">
+                            <label style="margin:0; font-size: 0.9rem;">標題色</label>
+                            <input type="color" id="set-form-title-color" value="#00f0ff">
+                        </div>
                         
                         <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -597,7 +594,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260503_2236"></script>
+    <script src="script.js?v=20260503_2240"></script>
 
 </body>
 </html>
