@@ -130,8 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('set-form-title-color').value = settings.form_title_color;
                 }
                 if (settings.form_title_size) {
-                    formTitleH1.style.fontSize = settings.form_title_size;
+                    document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
                     document.getElementById('set-form-title-size').value = settings.form_title_size;
+                }
+                if (settings.form_title_size_mobile) {
+                    document.documentElement.style.setProperty('--title-size-mobile', settings.form_title_size_mobile);
+                    document.getElementById('set-form-title-size-mobile').value = settings.form_title_size_mobile;
                 }
                 if (settings.form_title_bold === 'true') {
                     formTitleH1.style.fontWeight = 'bold';
@@ -165,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettingsBtn.addEventListener('click', async () => {
         const newTitle = setFormTitleInput.value;
         const color = document.getElementById('set-form-title-color').value;
-        const size = document.getElementById('set-form-title-size').value;
+        const sizeDesktop = document.getElementById('set-form-title-size').value;
+        const sizeMobile = document.getElementById('set-form-title-size-mobile').value;
         const bold = document.getElementById('set-form-title-bold').checked ? 'true' : 'false';
         const italic = document.getElementById('set-form-title-italic').checked ? 'true' : 'false';
         console.log('Attempting to save new title:', newTitle);
@@ -173,7 +178,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await Promise.all([
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title', value: newTitle }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_color', value: color }) }),
-                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size', value: size }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size', value: sizeDesktop }) }),
+                fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_size_mobile', value: sizeMobile }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_bold', value: bold }) }),
                 fetch('/api/settings', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ key: 'form_title_italic', value: italic }) })
             ]);
@@ -261,21 +267,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="checkbox" id="check-${prod.product_id}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary);">
                         <img src="${prod.image_path || 'images/placeholder.png'}" alt="${prod.name}" class="view-detail-btn" data-id="${prod.id}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
                         <div style="display: flex; flex-direction: column; text-align: left;">
-                            <span style="font-size: 0.8rem; color: var(--primary); font-weight: bold; letter-spacing: 1px;">#${prod.product_id}</span>
                             <span class="product-name view-detail-text" style="font-size: 1.2rem; font-weight: 600; cursor: pointer; color: #fff;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#fff'">${prod.name}</span>
                             <span style="font-size: 0.9rem; color: var(--text-muted); display: block; margin-top: 4px; max-width: 300px; white-space: normal;">${prod.short_desc || ''}</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden;">
-                                <button type="button" class="qty-btn qty-minus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
-                                <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="width: 40px; text-align: center; background: transparent; border: none; color: #fff; font-size: 1rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
-                                <button type="button" class="qty-btn qty-plus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
+                    <div style="display: flex; align-items: center; gap: 15px; width: 100%; max-width: 260px; justify-content: flex-end;">
+                        <div style="display: flex; align-items: center; gap: 6px; width: 130px;">
+                            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden; width: 100%;">
+                                <button type="button" class="qty-btn qty-minus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">−</button>
+                                <input type="number" id="qty-${prod.product_id}" value="${qty}" min="1" ${maxQtyNum ? `max="${maxQtyNum}"` : ''} class="qty-input" style="flex: 1; min-width: 30px; text-align: center; background: transparent; border: none; color: #fff; font-size: 1rem; font-weight: 600; padding: 0; -moz-appearance: textfield;" oninvalid="this.setCustomValidity('超過訂購上限')" oninput="this.setCustomValidity('')">
+                                <button type="button" class="qty-btn qty-plus" style="width: 32px; height: 32px; background: transparent; border: none; color: #fff; cursor: pointer; transition: background 0.15s; font-size: 1.1rem; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">+</button>
                             </div>
                             ${limitHint}
                         </div>
-                        <span style="color: var(--primary); font-weight: 700; font-size: 1.3rem; min-width: 80px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3);">$${Number(prod.price || 0).toLocaleString()}</span>
+                        <span style="color: var(--primary); font-weight: 700; font-size: 1.3rem; width: 100px; text-align: right; text-shadow: 0 0 5px rgba(0, 240, 255, 0.3); flex-shrink: 0;">$${Number(prod.price || 0).toLocaleString()}</span>
                     </div>
                 </div>
             `;

@@ -143,12 +143,18 @@ body {
 
 h1 {
     font-family: 'Noto Serif TC', serif;
-    font-size: 2.2rem;
+    font-size: var(--title-size-mobile, 2.2rem);
     margin-bottom: 10px;
     color: var(--primary);
     font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
     letter-spacing: 2px;
+}
+
+@media (min-width: 768px) {
+    h1 {
+        font-size: var(--title-size-desktop, 2.2rem);
+    }
 }
 
 h2 {
