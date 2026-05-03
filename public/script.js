@@ -83,9 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper: Hex to RGBA
     function hexToRgba(hex, alpha) {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
+        if (!hex || hex[0] !== '#') return `rgba(0,0,0,${alpha})`;
+        const r = parseInt(hex.slice(1, 3), 16) || 0;
+        const g = parseInt(hex.slice(3, 5), 16) || 0;
+        const b = parseInt(hex.slice(5, 7), 16) || 0;
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
@@ -106,67 +107,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showVerificationUI() {
         showPage(registerPage);
-        document.getElementById('register-form').style.display = 'none';
-        document.getElementById('verify-code-section').style.display = 'block';
-        document.getElementById('register-footer-links').style.display = 'none';
-        document.getElementById('verify-footer-links').style.display = 'block';
+        const regForm = document.getElementById('register-form');
+        const verifySection = document.getElementById('verify-code-section');
+        if (regForm) regForm.style.display = 'none';
+        if (verifySection) verifySection.style.display = 'block';
+        const regFooter = document.getElementById('register-footer-links');
+        const verifyFooter = document.getElementById('verify-footer-links');
+        if (regFooter) regFooter.style.display = 'none';
+        if (verifyFooter) verifyFooter.style.display = 'block';
     }
-
-
 
     async function fetchSettings() {
         try {
             const res = await fetch('/api/settings');
             const settings = await res.json();
-                if (settings.form_title) {
-                    const cleanTitle = settings.form_title.replace(/[|\n]/g, '');
-                    const htmlTitle  = settings.form_title.replace(/[|\n]/g, '<br>');
-                    
-                    formTitleH1.innerHTML = htmlTitle;
-                    setFormTitleInput.value = settings.form_title;
-                    document.title = cleanTitle;
-                    
-                    const loginTitle = document.getElementById('login-title');
-                    const registerTitle = document.getElementById('register-title');
-                    if (loginTitle) loginTitle.innerHTML = htmlTitle;
-                    if (registerTitle) registerTitle.innerHTML = htmlTitle;
-                }
-                if (settings.form_title_color) {
-                    formTitleH1.style.color = settings.form_title_color;
-                    formTitleH1.style.textShadow = `0 0 10px ${settings.form_title_color}66`;
-                    document.getElementById('set-form-title-color').value = settings.form_title_color;
-                }
-                if (settings.site_bg_color) {
-                    document.documentElement.style.setProperty('--bg-dark', settings.site_bg_color);
-                    document.getElementById('set-site-bg-color').value = settings.site_bg_color;
-                }
-                if (settings.card_bg_color) {
-                    const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
-                    document.documentElement.style.setProperty('--glass-bg', rgbaValue);
-                    document.getElementById('set-card-bg-color').value = settings.card_bg_color;
-                }
-                if (settings.form_title_size) {
-                    document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
-                    document.getElementById('set-form-title-size').value = settings.form_title_size;
-                }
-                if (settings.form_title_size_mobile) {
-                    document.documentElement.style.setProperty('--title-size-mobile', settings.form_title_size_mobile);
-                    document.getElementById('set-form-title-size-mobile').value = settings.form_title_size_mobile;
-                }
-                if (settings.form_title_bold === 'true') {
-                    formTitleH1.style.fontWeight = 'bold';
-                    document.getElementById('set-form-title-bold').checked = true;
-                } else if (settings.form_title_bold === 'false') {
-                    formTitleH1.style.fontWeight = 'normal';
-                    document.getElementById('set-form-title-bold').checked = false;
-                }
-                if (settings.form_title_italic === 'true') {
-                    formTitleH1.style.fontStyle = 'italic';
-                    document.getElementById('set-form-title-italic').checked = true;
-                } else if (settings.form_title_italic === 'false') {
-                    formTitleH1.style.fontStyle = 'normal';
-                    document.getElementById('set-form-title-italic').checked = false;
-                }
+            if (settings.form_title) {
+                const cleanTitle = settings.form_title.replace(/[|\n]/g, '');
+                const htmlTitle  = settings.form_title.replace(/[|\n]/g, '<br>');
+                
+                formTitleH1.innerHTML = htmlTitle;
+                setFormTitleInput.value = settings.form_title;
+                document.title = cleanTitle;
+                
+                const loginTitle = document.getElementById('login-title');
+                const registerTitle = document.getElementById('register-title');
+                if (loginTitle) loginTitle.innerHTML = htmlTitle;
+                if (registerTitle) registerTitle.innerHTML = htmlTitle;
+            }
+            if (settings.form_title_color) {
+                formTitleH1.style.color = settings.form_title_color;
+                formTitleH1.style.textShadow = `0 0 10px ${settings.form_title_color}66`;
+                document.getElementById('set-form-title-color').value = settings.form_title_color;
+            }
+            if (settings.site_bg_color) {
+                document.documentElement.style.setProperty('--bg-dark', settings.site_bg_color);
+                document.getElementById('set-site-bg-color').value = settings.site_bg_color;
+            }
+            if (settings.card_bg_color) {
+                const rgbaValue = hexToRgba(settings.card_bg_color, 0.75);
+                document.documentElement.style.setProperty('--glass-bg', rgbaValue);
+                document.getElementById('set-card-bg-color').value = settings.card_bg_color;
+            }
+            if (settings.form_title_size) {
+                document.documentElement.style.setProperty('--title-size-desktop', settings.form_title_size);
+                document.getElementById('set-form-title-size').value = settings.form_title_size;
+            }
+            if (settings.form_title_size_mobile) {
+                document.documentElement.style.setProperty('--title-size-mobile', settings.form_title_size_mobile);
+                document.getElementById('set-form-title-size-mobile').value = settings.form_title_size_mobile;
+            }
+            if (settings.form_title_bold === 'true') {
+                formTitleH1.style.fontWeight = 'bold';
+                document.getElementById('set-form-title-bold').checked = true;
+            } else if (settings.form_title_bold === 'false') {
+                formTitleH1.style.fontWeight = 'normal';
+                document.getElementById('set-form-title-bold').checked = false;
+            }
+            if (settings.form_title_italic === 'true') {
+                formTitleH1.style.fontStyle = 'italic';
+                document.getElementById('set-form-title-italic').checked = true;
+            } else if (settings.form_title_italic === 'false') {
+                formTitleH1.style.fontStyle = 'normal';
+                document.getElementById('set-form-title-italic').checked = false;
             }
 
             const ogDescInput = document.getElementById('set-og-description');
